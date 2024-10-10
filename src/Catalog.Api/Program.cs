@@ -1,21 +1,47 @@
+using System;
+using Catalog.Api.Models.Settings;
+using Catalog.Core.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+#region Configuration
+var appSettings = builder.Configuration.Get<AppSettings>(
+    (binderOptions) => binderOptions.BindNonPublicProperties = true
+)!;
+#endregion
 
+#region DB Context
+var defaultDatabaseConnection = builder.Configuration.GetConnectionString("DefaultDatabaseConnection");
+
+builder.Services.AddDbContext<CatalogDbContext>(
+    (options) => {
+        switch (appSettings.DefaultDatabaseProvider)
+        {
+            case DatabaseProvider.Sqlite3:
+            options.UseSqlite(connectionString: defaultDatabaseConnection);
+                break;
+            default:
+                throw new NotSupportedException("Invalid Database Provider.");
+        }
+    }
+);
+#endregion
+
+#region Services
 builder.Services.AddControllers();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+#endregion
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+#region HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -24,7 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-
 app.MapControllers();
+#endregion
 
 app.Run();
