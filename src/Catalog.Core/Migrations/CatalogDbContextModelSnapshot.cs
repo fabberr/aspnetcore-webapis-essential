@@ -20,7 +20,6 @@ namespace Catalog.Core.Migrations
             modelBuilder.Entity("Catalog.Core.Models.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
@@ -45,12 +44,13 @@ namespace Catalog.Core.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.UseTpcMappingStrategy();
                 });
 
             modelBuilder.Entity("Catalog.Core.Models.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("CategoryId")
@@ -92,6 +92,8 @@ namespace Catalog.Core.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.UseTpcMappingStrategy();
                 });
 
             modelBuilder.Entity("Catalog.Core.Models.Entities.Product", b =>
