@@ -1,0 +1,1 @@
+When using the SQLite Database Provider, EF Core will create the database file `CatalogDB.sqlite3` in this directory.
