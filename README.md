@@ -1,7 +1,7 @@
 # Catalog API
 
 ## Descrição
-Aplicação Web API desenvolvida no framework ASP.NET Core durante o curso da Udemy "Web API ASP .NET Core Essencial (.NET 8)", ministrado por Jose Carlos Macoratti.
+Aplicação Web API desenvolvida no framework ASP.NET Core durante o curso [Web API ASP .NET Core Essencial (.NET 8)](https://www.udemy.com/course/curso-web-api-asp-net-core-essencial/?couponCode=KEEPLEARNING), ministrado por Jose Carlos Macoratti.
 
 Tecnologias utilziadas:
 - .NET 8
