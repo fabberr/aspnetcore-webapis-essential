@@ -11,7 +11,7 @@ Tecnologias utilziadas:
 
 ## Dependências
 
-- SQLite 3.x
+- SQLite 3.7.x
 - .NET SDK 8.x
 - .NET Runtime 8.x
 - ASP.NET Core Runtime 8.x
