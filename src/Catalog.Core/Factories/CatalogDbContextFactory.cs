@@ -18,8 +18,11 @@ public sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory<Catalo
     public CatalogDbContextFactory() => _appSettings = new ConfigurationBuilder().ConfigureAppSettings();
 
     /// <inheritdoc />
-    public CatalogDbContext CreateDbContext(string[] args) => new(
-        options: new DbContextOptionsBuilder()
-            .ConfigureDefaultDatabaseConnection(_appSettings).Options
-    );
+    public CatalogDbContext CreateDbContext(string[] args)
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<CatalogDbContext>();
+        optionsBuilder.ConfigureDefaultDatabaseConnection(_appSettings);
+
+        return new CatalogDbContext(optionsBuilder.Options);
+    }
 }

@@ -9,7 +9,16 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Catalog.Core.Context;
 
-public sealed class CatalogDbContext : DbContext
+/// <summary>
+/// <see cref="DbContext"/> implementation for the <c>Catalog</c> database.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of <see cref="CatalogDbContext"/>
+/// </remarks>
+/// <param name="options">
+/// The options used by this <c>DbContext</c>.
+/// </param>
+public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options) : DbContext(options)
 {
     #region Fields
     /// <summary>
@@ -33,14 +42,6 @@ public sealed class CatalogDbContext : DbContext
         var catalogDbContextAssemblyTypes = typeof(CatalogDbContext).Assembly.GetTypes();
         _entityTypes = catalogDbContextAssemblyTypes.Where(isConcreteImplementationOfEntityBase);
     }
-
-    public CatalogDbContext(DbContextOptions options)
-        : base(options)
-    { }
-
-    public CatalogDbContext(DbContextOptions<CatalogDbContext> options)
-        : base(options)
-    { }
     #endregion
 
     #region Private Methods
@@ -54,21 +55,6 @@ public sealed class CatalogDbContext : DbContext
         foreach (var entity in modifiedEntities)
         {
             (entity as EntityBase)!.UpdatedAt = DateTime.UtcNow;
-        }
-    }
-    #endregion
-
-    #region OnModelCreating
-    /// <inheritdoc />
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Ensure every entity uses the Table Per Concrete Type (TCP) mapping strategy
-        foreach (var entityType in _entityTypes)
-        {
-            modelBuilder.Entity(entityType)
-                .UseTpcMappingStrategy()
-                .Property(nameof(EntityBase.Id))
-                .ValueGeneratedOnAdd();
         }
     }
     #endregion
