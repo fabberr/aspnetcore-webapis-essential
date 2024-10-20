@@ -12,9 +12,9 @@ public abstract class EntityBase
 
     [Required]
     [Editable(false)]
-    public DateTime CreatedAt { get; init; } = default;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
-    public DateTime? UpdatedAt { get; init; } = null;
+    public DateTime? UpdatedAt { get; set; } = null;
 
     [Required]
     [DefaultValue(false)]
