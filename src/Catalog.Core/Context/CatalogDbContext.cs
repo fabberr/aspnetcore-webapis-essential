@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Catalog.Core.Context;
 
-public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options) : DbContext(options)
+public sealed class CatalogDbContext : DbContext
 {
     #region Fields
     /// <summary>
@@ -33,6 +33,14 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         var catalogDbContextAssemblyTypes = typeof(CatalogDbContext).Assembly.GetTypes();
         _entityTypes = catalogDbContextAssemblyTypes.Where(isConcreteImplementationOfEntityBase);
     }
+
+    public CatalogDbContext(DbContextOptions options)
+        : base(options)
+    { }
+
+    public CatalogDbContext(DbContextOptions<CatalogDbContext> options)
+        : base(options)
+    { }
     #endregion
 
     #region Private Methods
@@ -57,7 +65,10 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         // Ensure every entity uses the Table Per Concrete Type (TCP) mapping strategy
         foreach (var entityType in _entityTypes)
         {
-            modelBuilder.Entity(entityType).UseTpcMappingStrategy();
+            modelBuilder.Entity(entityType)
+                .UseTpcMappingStrategy()
+                .Property(nameof(EntityBase.Id))
+                .ValueGeneratedOnAdd();
         }
     }
     #endregion
