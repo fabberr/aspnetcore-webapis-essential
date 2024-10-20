@@ -21,7 +21,6 @@ public abstract class EntityBase
     /// This value is read-only.
     /// </summary>
     [Required]
-    [Timestamp]
     [Editable(false)]
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
@@ -30,7 +29,6 @@ public abstract class EntityBase
     /// This property is set automatically by the <see cref="Context.CatalogDbContext"/>
     /// for all modified entities before changes are commited to the database.
     /// </summary>
-    [Timestamp]
     public DateTime? UpdatedAt { get; set; } = null;
 
     /// <summary>
