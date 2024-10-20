@@ -13,7 +13,10 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 {
     #region Fields
     /// <summary>
-    /// A collection of types representing all entities tracked by this DbContext.
+    /// A collection of all entity types tracked by <see cref="CatalogDbContext"/>, obtained through
+    /// reflection.<br/>
+    /// An entity is assumed to be a <b>concrete reference type</b> which <b>directly derives</b>
+    /// from <see cref="EntityBase"/>.
     /// </summary>
     private readonly static IEnumerable<Type> _entityTypes;
     #endregion
@@ -48,6 +51,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     #endregion
 
     #region OnModelCreating
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Ensure every entity uses the Table Per Concrete Type (TCP) mapping strategy

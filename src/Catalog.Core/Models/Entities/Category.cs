@@ -4,19 +4,32 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Catalog.Core.Models.Entities;
 
+/// <summary>
+/// Represents the category of a product.<br/>
+/// This type cannot be inherited.
+/// </summary>
 [Table("Categories")]
 public class Category : EntityBase
 {
+    /// <summary>
+    /// The name of this category.
+    /// </summary>
     [Required]
     [StringLength(80)]
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The URI of this category's thumbnail image.
+    /// </summary>
     [Required]
     [Url]
     [StringLength(300)]
     public string ImageUri { get; set; } = string.Empty;
 
     #region Category 1..* Product
+    /// <summary>
+    /// A collection of products belonging to this category.
+    /// </summary>
     public ICollection<Product>? Products { get; set; } = [];
     #endregion
 }
