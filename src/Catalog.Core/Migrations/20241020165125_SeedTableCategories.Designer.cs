@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Catalog.Core.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20241010013613_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20241020165125_SeedTableCategories")]
+    partial class SeedTableCategories
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,6 +23,7 @@ namespace Catalog.Core.Migrations
             modelBuilder.Entity("Catalog.Core.Models.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
@@ -47,13 +48,12 @@ namespace Catalog.Core.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.UseTpcMappingStrategy();
                 });
 
             modelBuilder.Entity("Catalog.Core.Models.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("CategoryId")
@@ -95,8 +95,6 @@ namespace Catalog.Core.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
-
-                    b.UseTpcMappingStrategy();
                 });
 
             modelBuilder.Entity("Catalog.Core.Models.Entities.Product", b =>

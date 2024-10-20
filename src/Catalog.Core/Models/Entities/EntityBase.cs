@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Catalog.Core.Models.Entities;
 
@@ -14,6 +15,7 @@ public abstract class EntityBase
     /// </summary>
     [Key]
     [Editable(false)]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; init; } = default;
     
     /// <summary>
