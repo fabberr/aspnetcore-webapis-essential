@@ -15,20 +15,22 @@ public abstract class EntityBase
     [Key]
     [Editable(false)]
     public int Id { get; init; } = default;
-
+    
     /// <summary>
     /// The timestamp of when this entity was first created (UTC).<br/>
     /// This value is read-only.
     /// </summary>
     [Required]
+    [Timestamp]
     [Editable(false)]
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
     /// <summary>
     /// The timestamp of when this entity was last modified (UTC).<br/>
     /// This property is set automatically by the <see cref="Context.CatalogDbContext"/>
     /// for all modified entities before changes are commited to the database.
     /// </summary>
+    [Timestamp]
     public DateTime? UpdatedAt { get; set; } = null;
 
     /// <summary>
