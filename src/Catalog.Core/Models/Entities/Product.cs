@@ -9,7 +9,7 @@ namespace Catalog.Core.Models.Entities;
 /// This type cannot be inherited.
 /// </summary>
 [Table("Products")]
-public class Product : EntityBase
+public sealed class Product : EntityBase
 {
     /// <summary>
     /// The name of this product.

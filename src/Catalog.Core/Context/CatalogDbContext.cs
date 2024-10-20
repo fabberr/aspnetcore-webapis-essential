@@ -27,7 +27,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         // Predicates
         static bool isConcreteImplementationOfEntityBase(Type type) => (
             type.BaseType == typeof(EntityBase)
-            && type is { IsAbstract: false, IsClass: true }
+            && type is { IsAbstract: false, IsInterface: false, IsValueType: false }
         );
 
         var catalogDbContextAssemblyTypes = typeof(CatalogDbContext).Assembly.GetTypes();
