@@ -22,7 +22,6 @@ public sealed class Category : EntityBase
     /// The URI of this category's thumbnail image.
     /// </summary>
     [Required]
-    [Url]
     [StringLength(300)]
     public string ImageUri { get; set; } = string.Empty;
 

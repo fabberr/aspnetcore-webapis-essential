@@ -42,7 +42,6 @@ public sealed class Product : EntityBase
     /// The URI of this product's thumbnail image.
     /// </summary>
     [Required]
-    [Url]
     [StringLength(300)]
     public string ImageUri { get; set; } = string.Empty;
 
