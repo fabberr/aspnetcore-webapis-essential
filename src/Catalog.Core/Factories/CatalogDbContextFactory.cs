@@ -15,6 +15,10 @@ public sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory<Catalo
 {
     private readonly IAppSettings _appSettings;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="CatalogDbContextFactory"/> with
+    /// a <see cref="IAppSettings"/>instance bound from a JSON file.
+    /// </summary>
     public CatalogDbContextFactory() => _appSettings = new ConfigurationBuilder().ConfigureAppSettings();
 
     /// <inheritdoc />
