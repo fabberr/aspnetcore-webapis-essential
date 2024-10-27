@@ -1,0 +1,3 @@
+[submodule "setenv"]
+	path = submodules/setenv
+	url = git@github.com:fabberr/setenv.git
