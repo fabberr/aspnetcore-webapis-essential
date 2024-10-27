@@ -13,13 +13,29 @@ namespace Catalog.Core.Factories;
 /// </summary>
 public sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory<CatalogDbContext>
 {
+    private const string EnvironmentVariablePrefix      = "ASPNETCORE_";
+    private const string ConfigurationBaseDirectoryKey  = "CONFIGURATION_BASE_DIRECTORY";
+    private const string ConfigurationFilenameKey       = "CONFIGURATION_FILENAME";
+
     private readonly IAppSettings _appSettings;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="CatalogDbContextFactory"/> with
-    /// a <see cref="IAppSettings"/>instance bound from a JSON file.
+    /// Initializes a new instance of <see cref="CatalogDbContextFactory"/>.<br/>
+    /// An <see cref="IAppSettings"/> instance will be configured through the
+    /// <see cref="ConfigurationExtensions.ConfigureAppSettings"/> method.
     /// </summary>
-    public CatalogDbContextFactory() => _appSettings = new ConfigurationBuilder().ConfigureAppSettings();
+    public CatalogDbContextFactory()
+    {
+        var environmentVariables = new ConfigurationBuilder()
+            .AddEnvironmentVariables(prefix: EnvironmentVariablePrefix)
+            .Build();
+
+        _appSettings = new ConfigurationBuilder()
+            .ConfigureAppSettings(
+                basePath: environmentVariables[ConfigurationBaseDirectoryKey],
+                filename: environmentVariables[ConfigurationFilenameKey]
+            );
+    }
 
     /// <inheritdoc />
     public CatalogDbContext CreateDbContext(string[] args)

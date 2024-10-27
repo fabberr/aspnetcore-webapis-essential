@@ -24,7 +24,7 @@ public static class ConfigurationExtensions
     /// Absolute path to the base directory where the configuration file is located.<br/>
     /// When no value is provided <see cref="Directory.GetCurrentDirectory()"/> is used.
     /// </param>
-    /// <param name="path">
+    /// <param name="filename">
     /// (Optional)<br/>
     /// Path to the configuration file, relative to <paramref name="basePath"/>.<br/>
     /// When no value is provided <c>appsettings.json</c> is used.
@@ -38,13 +38,13 @@ public static class ConfigurationExtensions
     public static IAppSettings ConfigureAppSettings(
         this IConfigurationBuilder configurationBuilder,
         in string? basePath = null,
-        in string? path = null
+        in string? filename = null
     )
     {
         ArgumentNullException.ThrowIfNull(configurationBuilder);
 
         var _basePath = basePath ?? Directory.GetCurrentDirectory();
-        var _relativePath = path ?? "appsettings.json";
+        var _relativePath = filename ?? "appsettings.json";
         var _fullPath = Path.Join(_basePath, _relativePath);
 
         var configurationRoot = configurationBuilder
