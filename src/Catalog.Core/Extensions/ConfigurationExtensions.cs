@@ -20,12 +20,14 @@ public static class ConfigurationExtensions
     /// be added.
     /// </param>
     /// <param name="basePath">
-    /// The absolute path of the configuration.<br/>
-    /// Optional. When no value is provided <see cref="Directory.GetCurrentDirectory()"/> is used.
+    /// (Optional)<br/>
+    /// Absolute path to the base directory where the configuration file is located.<br/>
+    /// When no value is provided <see cref="Directory.GetCurrentDirectory()"/> is used.
     /// </param>
     /// <param name="path">
-    /// Path to the JSON file, relative to <paramref name="basePath"/>.<br/>
-    /// Optional. When no value is provided <c>appsettings.json</c> is used.
+    /// (Optional)<br/>
+    /// Path to the configuration file, relative to <paramref name="basePath"/>.<br/>
+    /// When no value is provided <c>appsettings.json</c> is used.
     /// </param>
     /// <returns>
     /// The <see cref="IAppSettings"/> instance that was bound from the root configuration section.
