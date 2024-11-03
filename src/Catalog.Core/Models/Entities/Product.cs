@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Core.Models.Entities;
@@ -54,6 +55,7 @@ public sealed class Product : EntityBase
     /// <summary>
     /// The category this product belongs to.
     /// </summary>
+    [JsonIgnore]
     public Category? Category { get; set; } = null;
     #endregion
 }

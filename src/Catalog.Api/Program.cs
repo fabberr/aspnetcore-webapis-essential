@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Catalog.Core.Context;
 using Catalog.Core.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -20,12 +22,20 @@ builder.Services.AddDbContext<CatalogDbContext>(
     optionsLifetime: ServiceLifetime.Scoped
 );
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions((options) => {
+        options.JsonSerializerOptions.AllowTrailingCommas = false;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.ReadCommentHandling = JsonCommentHandling.Skip;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<RouteOptions>(options => {
+builder.Services.Configure<RouteOptions>((options) => {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
