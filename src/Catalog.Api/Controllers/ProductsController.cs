@@ -69,7 +69,7 @@ namespace Catalog.Api.Controllers
 
             if (id != product.Id)
             {
-                return ValidationProblem("The 'id' route parameter does not match the entity id present in the content.");
+                return ValidationProblem("The 'id' route parameter does not match the entity id provided in the content.");
             }
 
             _dbContext.Entry(product).State = EntityState.Modified;
