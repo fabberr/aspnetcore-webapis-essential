@@ -44,14 +44,16 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     }
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
-    public ActionResult<Category> GetCategoryById(int id)
+    public ActionResult<Category> GetCategoryById(int id, bool includeProducts)
     {
         if (id <= 0)
         {
             return ValidationProblem("Invalid 'id' route parameter.");
         }
 
-        var category = _dbContext.Categories.Find(id);
+        var category = includeProducts
+            ? _dbContext.Categories.Include(c => c.Products).FirstOrDefault(c => c.Id == id)
+            : _dbContext.Categories.Find(id);
 
         if (category is null)
         {
