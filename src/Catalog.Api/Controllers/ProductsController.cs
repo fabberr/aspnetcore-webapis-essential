@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Catalog.Api.Controllers
 {
     [Route("api/[controller]")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     [ApiController]
     public class ProductsController(CatalogDbContext dbContext) : ControllerBase
     {
@@ -29,11 +31,6 @@ namespace Catalog.Api.Controllers
         [HttpPost(Name = nameof(CreateProduct))]
         public ActionResult<Product> CreateProduct(Product product)
         {
-            if (product is null)
-            {
-                return BadRequest();
-            }
-
             _dbContext.Add(product);
             _dbContext.SaveChanges();
 
@@ -47,6 +44,11 @@ namespace Catalog.Api.Controllers
         [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
         public ActionResult<Product> GetProductById(int id)
         {
+            if (id <= 0)
+            {
+                return ValidationProblem("Invalid 'id' route parameter.");
+            }
+
             var product = _dbContext.Products.Find(id);
 
             if (product is null)
@@ -60,9 +62,14 @@ namespace Catalog.Api.Controllers
         [HttpPut(template: "{id:int}", Name = nameof(UpdateProduct))]
         public ActionResult<Product> UpdateProduct(int id, Product product)
         {
-            if (id is 0 || id != product.Id || product is null)
+            if (id <= 0)
             {
-                return BadRequest();
+                return ValidationProblem("Invalid 'id' route parameter.");
+            }
+
+            if (id != product.Id)
+            {
+                return ValidationProblem("The 'id' route parameter does not match the entity id present in the content.");
             }
 
             _dbContext.Entry(product).State = EntityState.Modified;
@@ -74,6 +81,11 @@ namespace Catalog.Api.Controllers
         [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
         public ActionResult<Product> DeleteProduct(int id)
         {
+            if (id <= 0)
+            {
+                return ValidationProblem("Invalid 'id' route parameter.");
+            }
+
             var product = _dbContext.Products.Find(id);
 
             if (product is null)
