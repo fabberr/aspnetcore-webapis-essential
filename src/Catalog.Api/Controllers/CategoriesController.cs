@@ -5,8 +5,8 @@ using Catalog.Core.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Catalog.Api.Controllers
-{
+namespace Catalog.Api.Controllers;
+
     [Route("api/[controller]")]
     [Consumes("application/json")]
     [Produces("application/json")]
@@ -97,6 +97,5 @@ namespace Catalog.Api.Controllers
             _dbContext.SaveChanges();
 
             return category;
-        }
     }
 }
