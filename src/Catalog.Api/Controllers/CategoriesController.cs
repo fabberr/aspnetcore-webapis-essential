@@ -61,6 +61,31 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
         return category;
     }
 
+    [HttpGet(template: "{id:int}/products", Name = nameof(ListCategoryProducts))]
+    public ActionResult<IEnumerable<Product>> ListCategoryProducts(int id)
+    {
+        if (id <= 0)
+        {
+            return ValidationProblem("Invalid 'id' route parameter.");
+        }
+
+        var products = _dbContext.Categories
+            .Where(c => c.Id == id)
+            .Join(
+                _dbContext.Products,
+                category => category.Id, product => product.CategoryId,
+                (_, product) => product
+            )
+            .ToList();
+
+        if (products is null or { Count: 0 })
+        {
+            return NotFound();
+        }
+
+        return products.ToList();
+    }
+
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategory))]
     public ActionResult<Category> UpdateCategory(int id, Category category)
     {
