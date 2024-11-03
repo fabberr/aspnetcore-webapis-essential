@@ -7,95 +7,97 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Api.Controllers;
 
-    [Route("api/[controller]")]
-    [Consumes("application/json")]
-    [Produces("application/json")]
-    [ApiController]
-    public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
+[Route("api/[controller]")]
+[Consumes("application/json")]
+[Produces("application/json")]
+[ApiController]
+public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
+{
+    private readonly CatalogDbContext _dbContext = dbContext;
+
+    [HttpGet(Name = nameof(ListCategories))]
+    public ActionResult<IEnumerable<Category>> ListCategories(bool includeProducts)
     {
-        private readonly CatalogDbContext _dbContext = dbContext;
+        var categories = includeProducts
+            ? _dbContext.Categories.Include(c => c.Products).ToList()
+            : _dbContext.Categories.ToList();
 
-        [HttpGet(Name = nameof(ListCategories))]
-        public ActionResult<IEnumerable<Category>> ListCategories()
+        if (categories is null or { Count: 0 })
         {
-            var categories = _dbContext.Categories.ToList();
-
-            if (categories is null or { Count: 0 })
-            {
-                return NotFound();
-            }
-
-            return categories;
+            return NotFound();
         }
 
-        [HttpPost(Name = nameof(CreateCategory))]
-        public ActionResult<Category> CreateCategory(Category category)
-        {
-            _dbContext.Add(category);
-            _dbContext.SaveChanges();
+        return categories;
+    }
 
-            return CreatedAtRoute(
-                routeName: nameof(GetCategoryById),
-                routeValues: new { id = category.Id },
-                value: category
-            );
+    [HttpPost(Name = nameof(CreateCategory))]
+    public ActionResult<Category> CreateCategory(Category category)
+    {
+        _dbContext.Add(category);
+        _dbContext.SaveChanges();
+
+        return CreatedAtRoute(
+            routeName: nameof(GetCategoryById),
+            routeValues: new { id = category.Id },
+            value: category
+        );
+    }
+
+    [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
+    public ActionResult<Category> GetCategoryById(int id)
+    {
+        if (id <= 0)
+        {
+            return ValidationProblem("Invalid 'id' route parameter.");
         }
 
-        [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
-        public ActionResult<Category> GetCategoryById(int id)
+        var category = _dbContext.Categories.Find(id);
+
+        if (category is null)
         {
-            if (id <= 0)
-            {
-                return ValidationProblem("Invalid 'id' route parameter.");
-            }
-
-            var category = _dbContext.Categories.Find(id);
-
-            if (category is null)
-            {
-                return NotFound();
-            }
-
-            return category;
+            return NotFound();
         }
 
-        [HttpPut(template: "{id:int}", Name = nameof(UpdateCategory))]
-        public ActionResult<Category> UpdateCategory(int id, Category category)
+        return category;
+    }
+
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategory))]
+    public ActionResult<Category> UpdateCategory(int id, Category category)
+    {
+        if (id <= 0)
         {
-            if (id <= 0)
-            {
-                return ValidationProblem("Invalid 'id' route parameter.");
-            }
-
-            if (id != category.Id)
-            {
-                return ValidationProblem("The 'id' route parameter does not match the entity id provided in the content.");
-            }
-
-            _dbContext.Entry(category).State = EntityState.Modified;
-            _dbContext.SaveChanges();
-
-            return category;
+            return ValidationProblem("Invalid 'id' route parameter.");
         }
 
-        [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
-        public ActionResult<Category> DeleteCategory(int id)
+        if (id != category.Id)
         {
-            if (id <= 0)
-            {
-                return ValidationProblem("Invalid 'id' route parameter.");
-            }
+            return ValidationProblem("The 'id' route parameter does not match the entity id provided in the content.");
+        }
 
-            var category = _dbContext.Categories.Find(id);
+        _dbContext.Entry(category).State = EntityState.Modified;
+        _dbContext.SaveChanges();
 
-            if (category is null)
-            {
-                return NotFound();
-            }
+        return category;
+    }
 
-            _dbContext.Remove(category);
-            _dbContext.SaveChanges();
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
+    public ActionResult<Category> DeleteCategory(int id)
+    {
+        if (id <= 0)
+        {
+            return ValidationProblem("Invalid 'id' route parameter.");
+        }
 
-            return category;
+        var category = _dbContext.Categories.Find(id);
+
+        if (category is null)
+        {
+            return NotFound();
+        }
+
+        _dbContext.Remove(category);
+        _dbContext.SaveChanges();
+
+        return category;
     }
 }
