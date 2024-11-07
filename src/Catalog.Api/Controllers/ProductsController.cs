@@ -18,7 +18,7 @@ public class ProductsController(CatalogDbContext dbContext) : ControllerBase
     [HttpGet(Name = nameof(ListProducts))]
     public ActionResult<IEnumerable<Product>> ListProducts()
     {
-        var products = _dbContext.Products.ToList();
+        var products = _dbContext.Products.AsNoTracking().ToList();
 
         if (products is null or { Count: 0 })
         {

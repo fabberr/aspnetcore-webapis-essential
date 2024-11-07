@@ -19,8 +19,8 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     public ActionResult<IEnumerable<Category>> ListCategories(bool includeProducts)
     {
         var categories = includeProducts
-            ? _dbContext.Categories.Include(c => c.Products).ToList()
-            : _dbContext.Categories.ToList();
+            ? _dbContext.Categories.AsNoTracking().Include(c => c.Products).ToList()
+            : _dbContext.Categories.AsNoTracking().ToList();
 
         if (categories is null or { Count: 0 })
         {
@@ -52,7 +52,7 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
         }
 
         var category = includeProducts
-            ? _dbContext.Categories.Include(c => c.Products).FirstOrDefault(c => c.Id == id)
+            ? _dbContext.Categories.AsNoTracking().Include(c => c.Products).FirstOrDefault(c => c.Id == id)
             : _dbContext.Categories.Find(id);
 
         if (category is null)
@@ -71,10 +71,10 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
             return ValidationProblem("Invalid 'id' route parameter.");
         }
 
-        var products = _dbContext.Categories
+        var products = _dbContext.Categories.AsNoTracking()
             .Where(c => c.Id == id)
             .Join(
-                _dbContext.Products,
+                _dbContext.Products.AsNoTracking(),
                 category => category.Id, product => product.CategoryId,
                 (_, product) => product
             )
