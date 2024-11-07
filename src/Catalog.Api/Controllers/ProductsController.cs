@@ -16,9 +16,12 @@ public class ProductsController(CatalogDbContext dbContext) : ControllerBase
     private readonly CatalogDbContext _dbContext = dbContext;
 
     [HttpGet(Name = nameof(ListProducts))]
-    public ActionResult<IEnumerable<Product>> ListProducts()
+    public ActionResult<IEnumerable<Product>> ListProducts(uint limit = 10u, uint offset = 0u)
     {
-        var products = _dbContext.Products.AsNoTracking().ToList();
+        var products = _dbContext.Products.AsNoTracking()
+            .Skip((int)offset)
+            .Take((int)limit)
+            .ToList();
 
         if (products is null or { Count: 0 })
         {

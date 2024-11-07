@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Catalog.Core.Context;
@@ -16,11 +17,15 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     private readonly CatalogDbContext _dbContext = dbContext;
 
     [HttpGet(Name = nameof(ListCategories))]
-    public ActionResult<IEnumerable<Category>> ListCategories(bool includeProducts)
+    public ActionResult<IEnumerable<Category>> ListCategories(bool includeProducts, uint limit = 10u, uint offset = 0u)
     {
+        var categoriesQuery = _dbContext.Categories.AsNoTracking()
+            .Skip((int)offset)
+            .Take((int)limit);
+
         var categories = includeProducts
-            ? _dbContext.Categories.AsNoTracking().Include(c => c.Products).ToList()
-            : _dbContext.Categories.AsNoTracking().ToList();
+            ? categoriesQuery.Include(c => c.Products).ToList()
+            : categoriesQuery.ToList();
 
         if (categories is null or { Count: 0 })
         {
@@ -64,7 +69,7 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     }
 
     [HttpGet(template: "{id:int}/products", Name = nameof(ListCategoryProducts))]
-    public ActionResult<IEnumerable<Product>> ListCategoryProducts(int id)
+    public ActionResult<IEnumerable<Product>> ListCategoryProducts(int id, uint limit = 10u, uint offset = 0u)
     {
         if (id <= 0)
         {
@@ -78,6 +83,8 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
                 category => category.Id, product => product.CategoryId,
                 (_, product) => product
             )
+            .Skip((int)offset)
+            .Take((int)limit)
             .ToList();
 
         if (products is null or { Count: 0 })
