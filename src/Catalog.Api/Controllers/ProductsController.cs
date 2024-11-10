@@ -22,6 +22,7 @@ public class ProductsController(CatalogDbContext dbContext) : ControllerBase
         var products = _dbContext.Products.AsNoTracking()
             .Skip((int)offset)
             .Take((int)limit)
+            .OrderBy(p => p.Id)
             .ToList();
 
         if (products is null or { Count: 0 })

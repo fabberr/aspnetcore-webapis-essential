@@ -21,7 +21,8 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
             .Skip((int)offset)
-            .Take((int)limit);
+            .Take((int)limit)
+            .OrderBy(c => c.Id);
 
         var categories = includeProducts
             ? categoriesQuery.Include(c => c.Products).ToList()
@@ -87,6 +88,7 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
             )
             .Skip((int)offset)
             .Take((int)limit)
+            .OrderBy(p => p.Id)
             .ToList();
 
         if (products is null or { Count: 0 })
@@ -94,7 +96,7 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
             return NotFound();
         }
 
-        return products.ToList();
+        return products;
     }
 
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategory))]
