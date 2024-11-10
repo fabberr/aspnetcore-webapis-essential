@@ -18,9 +18,9 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     public async Task<ActionResult<IEnumerable<Category>>> ListCategoriesAsync(bool includeProducts, uint limit = 10u, uint offset = 0u)
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
+            .OrderBy(c => c.Id)
             .Skip((int)offset)
-            .Take((int)limit)
-            .OrderBy(c => c.Id);
+            .Take((int)limit);
 
         var categories = includeProducts
             ? await categoriesQuery.Include(c => c.Products).ToArrayAsync()
@@ -86,9 +86,9 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
                 category => category.Id, product => product.CategoryId,
                 (_, product) => product
             )
+            .OrderBy(p => p.Id)
             .Skip((int)offset)
             .Take((int)limit)
-            .OrderBy(p => p.Id)
             .ToArrayAsync();
 
         if (products is null or { Length: 0 })

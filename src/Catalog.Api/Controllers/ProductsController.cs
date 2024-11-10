@@ -18,9 +18,9 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
     public async Task<ActionResult<IEnumerable<Product>>> ListProductsAsync(uint limit = 10u, uint offset = 0u)
     {
         var products = await _dbContext.Products.AsNoTracking()
+            .OrderBy(p => p.Id)
             .Skip((int)offset)
             .Take((int)limit)
-            .OrderBy(p => p.Id)
             .ToArrayAsync();
 
         if (products is null or { Length: 0 })
