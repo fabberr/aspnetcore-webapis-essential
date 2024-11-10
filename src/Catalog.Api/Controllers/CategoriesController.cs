@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +53,8 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         var category = includeProducts
@@ -73,7 +74,8 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         var products = _dbContext.Categories.AsNoTracking()
@@ -100,12 +102,17 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         if (id != category.Id)
         {
-            return ValidationProblem("The 'id' route parameter does not match the entity id provided in the content.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(
+                detail: string.Format(Messages.Validation.ResourceIdMismatch, id, category.Id),
+                modelStateDictionary: ModelState
+            );
         }
 
         _dbContext.Entry(category).State = EntityState.Modified;
@@ -119,7 +126,8 @@ public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         var category = _dbContext.Categories.Find(id);

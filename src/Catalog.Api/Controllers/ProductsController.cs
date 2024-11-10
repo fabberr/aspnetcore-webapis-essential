@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -49,7 +50,8 @@ public class ProductsController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         var product = _dbContext.Products.Find(id);
@@ -67,12 +69,17 @@ public class ProductsController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         if (id != product.Id)
         {
-            return ValidationProblem("The 'id' route parameter does not match the entity id provided in the content.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(
+                detail: string.Format(Messages.Validation.ResourceIdMismatch, id, product.Id),
+                modelStateDictionary: ModelState
+            );
         }
 
         _dbContext.Entry(product).State = EntityState.Modified;
@@ -86,7 +93,8 @@ public class ProductsController(CatalogDbContext dbContext) : ControllerBase
     {
         if (id <= 0)
         {
-            return ValidationProblem("Invalid 'id' route parameter.");
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
         }
 
         var product = _dbContext.Products.Find(id);
