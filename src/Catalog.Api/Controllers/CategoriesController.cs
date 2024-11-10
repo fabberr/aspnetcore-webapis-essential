@@ -9,10 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Catalog.Api.Controllers;
 
 [Route("api/[controller]")]
-[Consumes("application/json")]
-[Produces("application/json")]
-[ApiController]
-public class CategoriesController(CatalogDbContext dbContext) : ControllerBase
+public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogApiController
 {
     private readonly CatalogDbContext _dbContext = dbContext;
 
