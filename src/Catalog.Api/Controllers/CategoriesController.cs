@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
@@ -13,8 +14,8 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 {
     private readonly CatalogDbContext _dbContext = dbContext;
 
-    [HttpGet(Name = nameof(ListCategories))]
-    public ActionResult<IEnumerable<Category>> ListCategories(bool includeProducts, uint limit = 10u, uint offset = 0u)
+    [HttpGet(Name = nameof(ListCategoriesAsync))]
+    public async Task<ActionResult<IEnumerable<Category>>> ListCategoriesAsync(bool includeProducts, uint limit = 10u, uint offset = 0u)
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
             .Skip((int)offset)
@@ -22,8 +23,8 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             .OrderBy(c => c.Id);
 
         var categories = includeProducts
-            ? categoriesQuery.Include(c => c.Products).ToArray()
-            : categoriesQuery.ToArray();
+            ? await categoriesQuery.Include(c => c.Products).ToArrayAsync()
+            : await categoriesQuery.ToArrayAsync();
 
         if (categories is null or { Length: 0 })
         {
@@ -33,21 +34,21 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         return categories;
     }
 
-    [HttpPost(Name = nameof(CreateCategory))]
-    public ActionResult<Category> CreateCategory(Category category)
+    [HttpPost(Name = nameof(CreateCategoryAsync))]
+    public async Task<ActionResult<Category>> CreateCategoryAsync(Category category)
     {
-        _dbContext.Add(category);
-        _dbContext.SaveChanges();
+        await _dbContext.AddAsync(category);
+        await _dbContext.SaveChangesAsync();
 
         return CreatedAtRoute(
-            routeName: nameof(GetCategoryById),
+            routeName: nameof(GetCategoryByIdAsync),
             routeValues: new { id = category.Id },
             value: category
         );
     }
 
-    [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
-    public ActionResult<Category> GetCategoryById(int id, bool includeProducts)
+    [HttpGet(template: "{id:int}", Name = nameof(GetCategoryByIdAsync))]
+    public async Task<ActionResult<Category>> GetCategoryByIdAsync(int id, bool includeProducts)
     {
         if (id <= 0)
         {
@@ -56,8 +57,10 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         }
 
         var category = includeProducts
-            ? _dbContext.Categories.AsNoTracking().Include(c => c.Products).FirstOrDefault(c => c.Id == id)
-            : _dbContext.Categories.Find(id);
+            ? await _dbContext.Categories.AsNoTracking()
+                .Include(c => c.Products)
+                .FirstOrDefaultAsync(c => c.Id == id)
+            : await _dbContext.Categories.FindAsync(id);
 
         if (category is null)
         {
@@ -67,8 +70,8 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         return category;
     }
 
-    [HttpGet(template: "{id:int}/products", Name = nameof(ListCategoryProducts))]
-    public ActionResult<IEnumerable<Product>> ListCategoryProducts(int id, uint limit = 10u, uint offset = 0u)
+    [HttpGet(template: "{id:int}/products", Name = nameof(ListCategoryProductsAsync))]
+    public async Task<ActionResult<IEnumerable<Product>>> ListCategoryProductsAsync(int id, uint limit = 10u, uint offset = 0u)
     {
         if (id <= 0)
         {
@@ -76,7 +79,7 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             return ValidationProblem(ModelState);
         }
 
-        var products = _dbContext.Categories.AsNoTracking()
+        var products = await _dbContext.Categories.AsNoTracking()
             .Where(c => c.Id == id)
             .Join(
                 _dbContext.Products.AsNoTracking(),
@@ -86,7 +89,7 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             .Skip((int)offset)
             .Take((int)limit)
             .OrderBy(p => p.Id)
-            .ToArray();
+            .ToArrayAsync();
 
         if (products is null or { Length: 0 })
         {
@@ -96,8 +99,8 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         return products;
     }
 
-    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategory))]
-    public ActionResult<Category> UpdateCategory(int id, Category category)
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryAsync))]
+    public async Task<ActionResult<Category>> UpdateCategoryAsync(int id, Category category)
     {
         if (id <= 0)
         {
@@ -115,13 +118,13 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         }
 
         _dbContext.Entry(category).State = EntityState.Modified;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         return category;
     }
 
-    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
-    public ActionResult<Category> DeleteCategory(int id)
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategoryAsync))]
+    public async Task<ActionResult<Category>> DeleteCategoryAsync(int id)
     {
         if (id <= 0)
         {
@@ -129,7 +132,7 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             return ValidationProblem(ModelState);
         }
 
-        var category = _dbContext.Categories.Find(id);
+        var category = await _dbContext.Categories.FindAsync(id);
 
         if (category is null)
         {
@@ -137,7 +140,7 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         }
 
         _dbContext.Remove(category);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         return category;
     }

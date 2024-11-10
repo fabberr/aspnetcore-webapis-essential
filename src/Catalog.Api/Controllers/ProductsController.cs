@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
@@ -13,14 +14,14 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 {
     private readonly CatalogDbContext _dbContext = dbContext;
 
-    [HttpGet(Name = nameof(ListProducts))]
-    public ActionResult<IEnumerable<Product>> ListProducts(uint limit = 10u, uint offset = 0u)
+    [HttpGet(Name = nameof(ListProductsAsync))]
+    public async Task<ActionResult<IEnumerable<Product>>> ListProductsAsync(uint limit = 10u, uint offset = 0u)
     {
-        var products = _dbContext.Products.AsNoTracking()
+        var products = await _dbContext.Products.AsNoTracking()
             .Skip((int)offset)
             .Take((int)limit)
             .OrderBy(p => p.Id)
-            .ToArray();
+            .ToArrayAsync();
 
         if (products is null or { Length: 0 })
         {
@@ -30,21 +31,21 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
         return products;
     }
 
-    [HttpPost(Name = nameof(CreateProduct))]
-    public ActionResult<Product> CreateProduct(Product product)
+    [HttpPost(Name = nameof(CreateProductAsync))]
+    public async Task<ActionResult<Product>> CreateProductAsync(Product product)
     {
-        _dbContext.Add(product);
-        _dbContext.SaveChanges();
+        await _dbContext.AddAsync(product);
+        await _dbContext.SaveChangesAsync();
 
         return CreatedAtRoute(
-            routeName: nameof(GetProductById),
+            routeName: nameof(GetProductByIdAsync),
             routeValues: new { id = product.Id },
             value: product
         );
     }
 
-    [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
-    public ActionResult<Product> GetProductById(int id)
+    [HttpGet(template: "{id:int}", Name = nameof(GetProductByIdAsync))]
+    public async Task<ActionResult<Product>> GetProductByIdAsync(int id)
     {
         if (id <= 0)
         {
@@ -52,7 +53,7 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
             return ValidationProblem(ModelState);
         }
 
-        var product = _dbContext.Products.Find(id);
+        var product = await _dbContext.Products.FindAsync(id);
 
         if (product is null)
         {
@@ -62,8 +63,8 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
         return product;
     }
 
-    [HttpPut(template: "{id:int}", Name = nameof(UpdateProduct))]
-    public ActionResult<Product> UpdateProduct(int id, Product product)
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateProductAsync))]
+    public async Task<ActionResult<Product>> UpdateProductAsync(int id, Product product)
     {
         if (id <= 0)
         {
@@ -81,13 +82,13 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
         }
 
         _dbContext.Entry(product).State = EntityState.Modified;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         return product;
     }
 
-    [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
-    public ActionResult<Product> DeleteProduct(int id)
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductAsync))]
+    public async Task<ActionResult<Product>> DeleteProductAsync(int id)
     {
         if (id <= 0)
         {
@@ -95,7 +96,7 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
             return ValidationProblem(ModelState);
         }
 
-        var product = _dbContext.Products.Find(id);
+        var product = await _dbContext.Products.FindAsync(id);
 
         if (product is null)
         {
@@ -103,7 +104,7 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
         }
 
         _dbContext.Remove(product);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         return product;
     }
