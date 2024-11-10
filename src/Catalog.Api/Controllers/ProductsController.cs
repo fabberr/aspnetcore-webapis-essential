@@ -20,9 +20,9 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
             .Skip((int)offset)
             .Take((int)limit)
             .OrderBy(p => p.Id)
-            .ToList();
+            .ToArray();
 
-        if (products is null or { Count: 0 })
+        if (products is null or { Length: 0 })
         {
             return NotFound();
         }

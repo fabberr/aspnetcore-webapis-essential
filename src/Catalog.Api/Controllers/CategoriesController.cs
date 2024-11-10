@@ -22,10 +22,10 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             .OrderBy(c => c.Id);
 
         var categories = includeProducts
-            ? categoriesQuery.Include(c => c.Products).ToList()
-            : categoriesQuery.ToList();
+            ? categoriesQuery.Include(c => c.Products).ToArray()
+            : categoriesQuery.ToArray();
 
-        if (categories is null or { Count: 0 })
+        if (categories is null or { Length: 0 })
         {
             return NotFound();
         }
@@ -86,9 +86,9 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             .Skip((int)offset)
             .Take((int)limit)
             .OrderBy(p => p.Id)
-            .ToList();
+            .ToArray();
 
-        if (products is null or { Count: 0 })
+        if (products is null or { Length: 0 })
         {
             return NotFound();
         }
