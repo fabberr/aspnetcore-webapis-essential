@@ -10,10 +10,14 @@ internal static class QueryCollectionExtensions
 {
     internal static bool TryParseValue<TValue>(
         this IQueryCollection queryCollection,
+
         string key,
+
         [NotNullWhen(true)]
         [MaybeNullWhen(false)]
-        out TValue result
+        out TValue result,
+
+        out string? invalidValue
     )
         where TValue : IParsable<TValue>
     {
@@ -21,9 +25,15 @@ internal static class QueryCollectionExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         result = default;
+        invalidValue = default;
 
-        string? stringValue;
-        if (!queryCollection.TryGetValue(key, out var stringValues) || (stringValue = stringValues.FirstOrDefault()) is null)
+        if (!queryCollection.TryGetValue(key, out var stringValues))
+        {
+            return false;
+        }
+
+        string? stringValue = invalidValue = stringValues.FirstOrDefault();
+        if (stringValue is null)
         {
             return false;
         }

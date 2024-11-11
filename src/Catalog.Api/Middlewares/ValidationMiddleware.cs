@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Api.Extensions;
@@ -32,13 +33,15 @@ public class ValidationMiddleware(RequestDelegate next, ProblemDetailsFactory pr
     {
         var modelStateDictionary = new ModelStateDictionary();
 
-        foreach (var (key, (min, max)) in _allowedIntegerParameterValueRanges)
+        foreach (var (key, (min, max)) in _allowedIntegerParameterValueRanges
+            .Where((kvp) => httpContext.Request.Query.ContainsKey(kvp.Key)))
         {
-            bool hasValue = httpContext.Request.Query.TryParseValue<uint>(key, out var value);
+            bool parsedSuccessfully = httpContext.Request.Query.TryParseValue<uint>(key, out var value, out var invalidValue);
 
-            if (hasValue && (value < min || value > max))
+            if (!parsedSuccessfully || !(value >= min && value <= max))
             {
-                modelStateDictionary.TryAddModelError(key, string.Format(Messages.Validation.InvalidValue, value));
+                string errorMessage = string.Format(Messages.Validation.InvalidValue, invalidValue ?? string.Empty);
+                modelStateDictionary.TryAddModelError(key, errorMessage);
             }
         }
 
