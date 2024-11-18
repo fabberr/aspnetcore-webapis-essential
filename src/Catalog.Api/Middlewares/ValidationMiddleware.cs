@@ -3,9 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Api.Extensions;
+using Catalog.Core.Models.Settings;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Middlewares;
 
@@ -18,19 +21,16 @@ internal readonly record struct AllowedRange(uint Min, uint Max)
 
 public class ValidationMiddleware(RequestDelegate next, ProblemDetailsFactory problemDetailsFactory)
 {
-    /// <summary>
-    ///     Maps integer-valued query parameter names to their respective valid ranges.
-    /// </summary>
-    private readonly static IReadOnlyDictionary<string, AllowedRange> _allowedIntegerParameterValueRanges = new Dictionary<string, AllowedRange>() {
-        ["limit"]  = (Min: 1u, Max: 100u),
-        ["offset"] = (Min: 0u, Max: int.MaxValue),
-    }.AsReadOnly();
-
     private readonly RequestDelegate _next = next;
     private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
 
-    public async Task InvokeAsync(HttpContext httpContext)
+    public async Task InvokeAsync(HttpContext httpContext, IOptionsSnapshot<ApiBehaviorSettings> options)
     {
+        var _allowedIntegerParameterValueRanges = new Dictionary<string, AllowedRange>() {
+            ["limit"]  = (Min: 1u, Max: options.Value.MaxItemsPerPage),
+            ["offset"] = (Min: 0u, Max: int.MaxValue),
+        }.AsReadOnly();
+
         var modelStateDictionary = new ModelStateDictionary();
 
         foreach (var (key, (min, max)) in _allowedIntegerParameterValueRanges

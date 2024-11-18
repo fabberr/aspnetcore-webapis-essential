@@ -1,9 +1,12 @@
+using Catalog.Core.Attributes;
+
 namespace Catalog.Core.Models.Settings;
 
 /// <summary>
 /// Represents the configuration section for the EF Core databse provider options.
 /// </summary>
-public class DatabaseProviderSettings
+[ConfigurationSection(nameof(AppSettings.DatabaseProvider))]
+public sealed class DatabaseProviderSettings
 {
     /// <summary>
     /// The default provider.

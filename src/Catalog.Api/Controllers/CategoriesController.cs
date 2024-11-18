@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Controllers;
 
@@ -15,12 +17,12 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     private readonly CatalogDbContext _dbContext = dbContext;
 
     [HttpGet(Name = nameof(ListCategoriesAsync))]
-    public async Task<ActionResult<IEnumerable<Category>>> ListCategoriesAsync(bool includeProducts, uint limit = 10u, uint offset = 0u)
+    public async Task<ActionResult<IEnumerable<Category>>> ListCategoriesAsync(IOptionsSnapshot<ApiBehaviorSettings> options, bool includeProducts, uint? limit = null, uint offset = 0u)
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
             .OrderBy(c => c.Id)
             .Skip((int)offset)
-            .Take((int)limit);
+            .Take((int)(limit ?? options.Value.DefaultItemsPerPage));
 
         var categories = includeProducts
             ? await categoriesQuery.Include(c => c.Products).ToArrayAsync()
@@ -71,7 +73,7 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     }
 
     [HttpGet(template: "{id:int}/products", Name = nameof(ListCategoryProductsAsync))]
-    public async Task<ActionResult<IEnumerable<Product>>> ListCategoryProductsAsync(int id, uint limit = 10u, uint offset = 0u)
+    public async Task<ActionResult<IEnumerable<Product>>> ListCategoryProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, int id, uint? limit = null, uint offset = 0u)
     {
         if (id <= 0)
         {
@@ -88,7 +90,7 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             )
             .OrderBy(p => p.Id)
             .Skip((int)offset)
-            .Take((int)limit)
+            .Take((int)(limit ?? options.Value.DefaultItemsPerPage))
             .ToArrayAsync();
 
         if (products is null or { Length: 0 })

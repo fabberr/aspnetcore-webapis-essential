@@ -13,7 +13,7 @@ public static class ConfigurationExtensions
 {
     /// <summary>
     /// Adds a JSON file to the configuration builder, builds the configuration, then binds the root
-    /// section to an instance of <see cref="IAppSettings"/> and returns it.
+    /// section to an instance of <see cref="AppSettings"/> and returns it.
     /// </summary>
     /// <param name="configurationBuilder">
     /// The <see cref="IConfigurationBuilder"/> instance to which the file will
@@ -30,12 +30,12 @@ public static class ConfigurationExtensions
     /// When no value is provided <c>appsettings.json</c> is used.
     /// </param>
     /// <returns>
-    /// The <see cref="IAppSettings"/> instance that was bound from the root configuration section.
+    /// The <see cref="AppSettings"/> instance that was bound from the root configuration section.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    /// If the configuration cannot be bound to to a new instance of <see cref="IAppSettings"/>.
+    /// If the configuration cannot be bound to to a new instance of <see cref="AppSettings"/>.
     /// </exception>
-    public static IAppSettings ConfigureAppSettings(
+    public static AppSettings ConfigureAppSettings(
         this IConfigurationBuilder configurationBuilder,
         in string? basePath = null,
         in string? filename = null
@@ -43,30 +43,36 @@ public static class ConfigurationExtensions
     {
         ArgumentNullException.ThrowIfNull(configurationBuilder);
 
+        // Setup and build the configuration section
         var _basePath = basePath ?? Directory.GetCurrentDirectory();
         var _relativePath = filename ?? "appsettings.json";
         var _fullPath = Path.Join(_basePath, _relativePath);
 
         var configurationRoot = configurationBuilder
             .SetBasePath(_basePath)
-            .AddJsonFile(_relativePath)
+            .AddJsonFile(
+                path: _relativePath,
+                optional: false,
+                reloadOnChange: true
+            )
             .Build();
 
+        // Bind the root configuration to a strongly-typed `AppSettings` instance
         return configurationRoot.Get<AppSettings>(
             configureOptions: (binderOptions) => binderOptions.BindNonPublicProperties = true
         ) ?? throw new InvalidOperationException(
-            message: $"Could not bind configuration to {nameof(IAppSettings)} instance with file '{_fullPath}'."
+            message: $"Could not bind configuration to {nameof(AppSettings)} instance with configuration present in file '{_fullPath}'."
         );
     }
 
     /// <summary>
-    /// Configures the default database connection based on the provided <see cref="IAppSettings"/>.
+    /// Configures the default database connection based on the provided <see cref="AppSettings"/>.
     /// </summary>
     /// <param name="optionsBuilder">
     /// The <see cref="DbContextOptionsBuilder{TContext}"/> instance to configure.
     /// </param>
     /// <param name="appSettings">
-    /// The <see cref="IAppSettings"/> instance from which the default database connection settings
+    /// The <see cref="AppSettings"/> instance from which the default database connection settings
     /// will be read from.
     /// </param>
     /// <returns>
@@ -78,11 +84,11 @@ public static class ConfigurationExtensions
     /// </exception>
     /// <exception cref="NotSupportedException">
     /// If an invalid <see cref="DatabaseProvider"/> was configured in the proided
-    /// <see cref="IAppSettings"/> instance.
+    /// <see cref="AppSettings"/> instance.
     /// </exception>
     public static DbContextOptionsBuilder ConfigureDefaultDatabaseConnection(
         this DbContextOptionsBuilder optionsBuilder,
-        in IAppSettings appSettings
+        in AppSettings appSettings
     )
     {
         ArgumentNullException.ThrowIfNull(optionsBuilder);
@@ -93,7 +99,7 @@ public static class ConfigurationExtensions
                 connectionString: appSettings.ConnectionStrings.SqlDatabase,
                 sqliteOptionsAction: (sqliteOptions) => {
                     /*
-                     * @todo: Map the rest of these options to IAppSettings and forward them here.
+                     * @todo: Map the rest of these options to AppSettings and forward them here.
                      * https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.infrastructure.relationaldbcontextoptionsbuilder-2?view=efcore-8.0
                     */
                 }

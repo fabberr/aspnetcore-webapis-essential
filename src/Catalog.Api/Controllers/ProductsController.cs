@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Controllers;
 
@@ -15,12 +17,12 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
     private readonly CatalogDbContext _dbContext = dbContext;
 
     [HttpGet(Name = nameof(ListProductsAsync))]
-    public async Task<ActionResult<IEnumerable<Product>>> ListProductsAsync(uint limit = 10u, uint offset = 0u)
+    public async Task<ActionResult<IEnumerable<Product>>> ListProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, uint? limit = null, uint offset = 0u)
     {
         var products = await _dbContext.Products.AsNoTracking()
             .OrderBy(p => p.Id)
             .Skip((int)offset)
-            .Take((int)limit)
+            .Take((int)(limit ?? options.Value.DefaultItemsPerPage))
             .ToArrayAsync();
 
         if (products is null or { Length: 0 })

@@ -17,11 +17,11 @@ public sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory<Catalo
     private const string ConfigurationBaseDirectoryKey  = "CONFIGURATION_BASE_DIRECTORY";
     private const string ConfigurationFilenameKey       = "CONFIGURATION_FILENAME";
 
-    private readonly IAppSettings _appSettings;
+    private readonly AppSettings _appSettings;
 
     /// <summary>
     /// Initializes a new instance of <see cref="CatalogDbContextFactory"/>.<br/>
-    /// An <see cref="IAppSettings"/> instance will be configured through the
+    /// An <see cref="AppSettings"/> instance will be configured through the
     /// <see cref="ConfigurationExtensions.ConfigureAppSettings"/> method.
     /// </summary>
     public CatalogDbContextFactory()

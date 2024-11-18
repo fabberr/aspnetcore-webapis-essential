@@ -1,11 +1,23 @@
 namespace Catalog.Core.Models.Settings;
 
-/// <inheritdoc cref="IAppSettings" />
-public class AppSettings : IAppSettings
+/// <summary>
+/// Represents the application's settings.
+/// This class cannot be inherited.
+/// </summary>
+public sealed class AppSettings
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// The connection strings section.
+    /// </summary>
     public ConnectionStringsSettings ConnectionStrings { get; init; } = new();
 
-    /// <inheritdoc />
+    /// <summary>
+    /// The database provider section.
+    /// </summary>
     public DatabaseProviderSettings DatabaseProvider { get; init; } = new();
+
+    /// <summary>
+    /// The API behavior section.
+    /// </summary>
+    public ApiBehaviorSettings ApiBehavior { get ; init ; } = new();
 }
