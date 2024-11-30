@@ -28,7 +28,7 @@ public class ApiActionLoggingFilter(ILoggerFactory loggerFactory) : IActionFilte
     public void OnActionExecuting(ActionExecutingContext context) => _logger.LogInformation(
         """
         [{Timestamp:dd/MM/yyyy hh:mm:ss.fffffff}] Executing Action: {ActionName}
-        HTTPS Enabled: {IsHttps}
+        HTTPS: {IsHttps}
         Route: {Route}
         Model State: {ModelValidationState}
         """,
@@ -43,7 +43,7 @@ public class ApiActionLoggingFilter(ILoggerFactory loggerFactory) : IActionFilte
     public void OnActionExecuted(ActionExecutedContext context) => _logger.LogInformation(
         """
         [{Timestamp:dd/MM/yyyy hh:mm:ss.fffffff}] Executed Action: {ActionName}
-        HTTPS Enabled: {IsHttps}
+        HTTPS: {IsHttps}
         Route: {Route}
         Response Status Code: {HttpResponseStatusCode}
         Elapsed Time: {ElapsedTime}
