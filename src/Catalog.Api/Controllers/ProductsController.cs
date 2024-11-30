@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
-using Catalog.Api.Filters;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
@@ -33,7 +32,6 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region GET
     [HttpGet(Name = GetProductsActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, uint? limit = null, uint offset = 0u)
     {
         var products = await _dbContext.Products.AsNoTracking()
@@ -51,7 +49,6 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
     }
 
     [HttpGet(template: "{id:int}", Name = GetProductByIdActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> GetProductByIdAsync(int id)
     {
         if (id <= 0)
@@ -73,7 +70,6 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region POST
     [HttpPost(Name = CreateProductActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> CreateProductAsync(Product product)
     {
         await _dbContext.AddAsync(product);
@@ -89,7 +85,6 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = UpdateProductActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> UpdateProductAsync(int id, Product product)
     {
         if (id <= 0)
@@ -116,7 +111,6 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductAsync))]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> DeleteProductAsync(int id)
     {
         if (id <= 0)

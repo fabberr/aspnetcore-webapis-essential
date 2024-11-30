@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
-using Catalog.Api.Filters;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
@@ -35,7 +34,6 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region GET
     [HttpGet(Name = GetCategoriesActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesAsync(IOptionsSnapshot<ApiBehaviorSettings> options, bool includeProducts, uint? limit = null, uint offset = 0u)
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
@@ -56,7 +54,6 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     }
 
     [HttpGet(template: "{id:int}", Name = GetCategoryByIdActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> GetCategoryByIdAsync(int id, bool includeProducts)
     {
         if (id <= 0)
@@ -80,7 +77,6 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     }
 
     [HttpGet(template: "{id:int}/products", Name = GetCategoryProductsActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, int id, uint? limit = null, uint offset = 0u)
     {
         if (id <= 0)
@@ -112,7 +108,6 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region POST
     [HttpPost(Name = CreateCategoryActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> CreateCategoryAsync(Category category)
     {
         await _dbContext.AddAsync(category);
@@ -128,7 +123,6 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = UpdateCategoryActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> UpdateCategoryAsync(int id, Category category)
     {
         if (id <= 0)
@@ -155,7 +149,6 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = DeleteCategoryActionName)]
-    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> DeleteCategoryAsync(int id)
     {
         if (id <= 0)
