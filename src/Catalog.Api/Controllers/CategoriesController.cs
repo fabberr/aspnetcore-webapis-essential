@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
+using Catalog.Api.Filters;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
@@ -14,10 +15,28 @@ namespace Catalog.Api.Controllers;
 [Route("api/[controller]")]
 public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogApiController
 {
-    private readonly CatalogDbContext _dbContext = dbContext;
+    #region Constants
+    private const string GetCategoriesActionName        = "GetCategories";
 
-    [HttpGet(Name = nameof(ListCategoriesAsync))]
-    public async Task<ActionResult<IEnumerable<Category>>> ListCategoriesAsync(IOptionsSnapshot<ApiBehaviorSettings> options, bool includeProducts, uint? limit = null, uint offset = 0u)
+    private const string GetCategoryByIdActionName      = "GetCategoryById";
+
+    private const string GetCategoryProductsActionName  = "GetCategoryProducts";
+
+    private const string CreateCategoryActionName       = "CreateCategory";
+
+    private const string UpdateCategoryActionName       = "UpdateCategory";
+
+    private const string DeleteCategoryActionName       = "DeleteCategory";
+    #endregion
+
+    #region Fields
+    private readonly CatalogDbContext _dbContext = dbContext;
+    #endregion
+
+    #region GET
+    [HttpGet(Name = GetCategoriesActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
+    public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesAsync(IOptionsSnapshot<ApiBehaviorSettings> options, bool includeProducts, uint? limit = null, uint offset = 0u)
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
             .OrderBy(c => c.Id)
@@ -36,20 +55,8 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         return categories;
     }
 
-    [HttpPost(Name = nameof(CreateCategoryAsync))]
-    public async Task<ActionResult<Category>> CreateCategoryAsync(Category category)
-    {
-        await _dbContext.AddAsync(category);
-        await _dbContext.SaveChangesAsync();
-
-        return CreatedAtRoute(
-            routeName: nameof(GetCategoryByIdAsync),
-            routeValues: new { id = category.Id },
-            value: category
-        );
-    }
-
-    [HttpGet(template: "{id:int}", Name = nameof(GetCategoryByIdAsync))]
+    [HttpGet(template: "{id:int}", Name = GetCategoryByIdActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> GetCategoryByIdAsync(int id, bool includeProducts)
     {
         if (id <= 0)
@@ -72,8 +79,9 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         return category;
     }
 
-    [HttpGet(template: "{id:int}/products", Name = nameof(ListCategoryProductsAsync))]
-    public async Task<ActionResult<IEnumerable<Product>>> ListCategoryProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, int id, uint? limit = null, uint offset = 0u)
+    [HttpGet(template: "{id:int}/products", Name = GetCategoryProductsActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
+    public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, int id, uint? limit = null, uint offset = 0u)
     {
         if (id <= 0)
         {
@@ -100,8 +108,27 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
         return products;
     }
+    #endregion
 
-    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryAsync))]
+    #region POST
+    [HttpPost(Name = CreateCategoryActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
+    public async Task<ActionResult<Category>> CreateCategoryAsync(Category category)
+    {
+        await _dbContext.AddAsync(category);
+        await _dbContext.SaveChangesAsync();
+
+        return CreatedAtRoute(
+            routeName: GetCategoryByIdActionName,
+            routeValues: new { id = category.Id },
+            value: category
+        );
+    }
+    #endregion
+
+    #region PUT
+    [HttpPut(template: "{id:int}", Name = UpdateCategoryActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> UpdateCategoryAsync(int id, Category category)
     {
         if (id <= 0)
@@ -124,8 +151,11 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
         return category;
     }
+    #endregion
 
-    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategoryAsync))]
+    #region DELETE
+    [HttpDelete(template: "{id:int}", Name = DeleteCategoryActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Category>> DeleteCategoryAsync(int id)
     {
         if (id <= 0)
@@ -146,4 +176,5 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
         return category;
     }
+    #endregion
 }

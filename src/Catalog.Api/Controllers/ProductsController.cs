@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
+using Catalog.Api.Filters;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
@@ -14,10 +15,26 @@ namespace Catalog.Api.Controllers;
 [Route("api/[controller]")]
 public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiController
 {
-    private readonly CatalogDbContext _dbContext = dbContext;
+    #region Constants
+    private const string GetProductsActionName      = "GetProducts";
 
-    [HttpGet(Name = nameof(ListProductsAsync))]
-    public async Task<ActionResult<IEnumerable<Product>>> ListProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, uint? limit = null, uint offset = 0u)
+    private const string GetProductByIdActionName   = "GetProductById";
+
+    private const string CreateProductActionName    = "CreateProduct";
+
+    private const string UpdateProductActionName    = "UpdateProduct";
+
+    private const string DeleteProductActionName    = "DeleteProduct";
+    #endregion
+
+    #region Fields
+    private readonly CatalogDbContext _dbContext = dbContext;
+    #endregion
+
+    #region GET
+    [HttpGet(Name = GetProductsActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
+    public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, uint? limit = null, uint offset = 0u)
     {
         var products = await _dbContext.Products.AsNoTracking()
             .OrderBy(p => p.Id)
@@ -33,20 +50,8 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
         return products;
     }
 
-    [HttpPost(Name = nameof(CreateProductAsync))]
-    public async Task<ActionResult<Product>> CreateProductAsync(Product product)
-    {
-        await _dbContext.AddAsync(product);
-        await _dbContext.SaveChangesAsync();
-
-        return CreatedAtRoute(
-            routeName: nameof(GetProductByIdAsync),
-            routeValues: new { id = product.Id },
-            value: product
-        );
-    }
-
-    [HttpGet(template: "{id:int}", Name = nameof(GetProductByIdAsync))]
+    [HttpGet(template: "{id:int}", Name = GetProductByIdActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> GetProductByIdAsync(int id)
     {
         if (id <= 0)
@@ -64,8 +69,27 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
         return product;
     }
+    #endregion
 
-    [HttpPut(template: "{id:int}", Name = nameof(UpdateProductAsync))]
+    #region POST
+    [HttpPost(Name = CreateProductActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
+    public async Task<ActionResult<Product>> CreateProductAsync(Product product)
+    {
+        await _dbContext.AddAsync(product);
+        await _dbContext.SaveChangesAsync();
+
+        return CreatedAtRoute(
+            routeName: GetProductByIdActionName,
+            routeValues: new { id = product.Id },
+            value: product
+        );
+    }
+    #endregion
+
+    #region PUT
+    [HttpPut(template: "{id:int}", Name = UpdateProductActionName)]
+    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> UpdateProductAsync(int id, Product product)
     {
         if (id <= 0)
@@ -88,8 +112,11 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
         return product;
     }
+    #endregion
 
+    #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductAsync))]
+    [ServiceFilter<ApiActionLoggingFilter>()]
     public async Task<ActionResult<Product>> DeleteProductAsync(int id)
     {
         if (id <= 0)
@@ -110,4 +137,5 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
         return product;
     }
+    #endregion
 }

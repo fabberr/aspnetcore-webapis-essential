@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Catalog.Api.Extensions;
 using Catalog.Api.Factories;
+using Catalog.Api.Filters;
 using Catalog.Core.Attributes;
 using Catalog.Core.Context;
 using Catalog.Core.Extensions;
@@ -71,6 +72,8 @@ builder.Services.Configure<RouteOptions>((options) => {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
+
+builder.Services.AddScoped<ApiActionLoggingFilter>();
 #endregion
 
 var app = builder.Build();
