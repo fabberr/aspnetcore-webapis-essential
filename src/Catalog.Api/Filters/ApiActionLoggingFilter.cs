@@ -16,10 +16,10 @@ namespace Catalog.Api.Filters;
 /// <param name="logger">
 /// A named <see cref="ILogger{TCategoryName}"/> instance.
 /// </param>
-public class ApiActionLoggingFilter(ILogger<ApiActionLoggingFilter> logger) : IActionFilter
+public class ApiActionLoggingFilter(ILoggerFactory loggerFactory) : IActionFilter
 {
     #region Fields
-    private readonly ILogger<ApiActionLoggingFilter> _logger = logger;
+    private readonly ILogger<ApiActionLoggingFilter> _logger = loggerFactory.CreateLogger<ApiActionLoggingFilter>();
     private readonly long _startingTimestamp = Stopwatch.GetTimestamp();
     #endregion
 

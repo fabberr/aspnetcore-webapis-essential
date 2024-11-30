@@ -11,6 +11,7 @@ namespace Catalog.Api.Extensions;
 /// </summary>
 internal static class ProblemDetailsContextExtensions
 {
+    #region Constants
     /// <summary>
     ///     Maps HTTP 4xx (Client Error) status codes to their respective
     ///     formal specification as defined in
@@ -68,6 +69,7 @@ internal static class ProblemDetailsContextExtensions
         [StatusCodes.Status426UpgradeRequired]              = new Uri("https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.22"),            
     #endif
     }.AsReadOnly();
+    #endregion
 
     /// <summary>
     ///     Sets members of the <see cref="ProblemDetails"/> instance held by this

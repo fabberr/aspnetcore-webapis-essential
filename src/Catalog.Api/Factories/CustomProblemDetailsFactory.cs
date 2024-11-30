@@ -10,17 +10,22 @@ using Microsoft.Extensions.Logging;
 namespace Catalog.Api.Factories;
 
 /// <summary>
-///     A <see cref="ProblemDetailsFactory"/> implementation providing custom behavior.
+/// A <see cref="ProblemDetailsFactory"/> implementation providing custom behavior.
 /// </summary>
 public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : ProblemDetailsFactory
 {
+    #region Constants
     private readonly static JsonSerializerOptions _stJsonSerializerOptions = new() {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
     };
+    #endregion
 
+    #region Fields
     private readonly ILogger<CustomProblemDetailsFactory> _logger = loggerFactory.CreateLogger<CustomProblemDetailsFactory>();
+    #endregion
 
+    #region ProblemDetailsFactory
     /// <inheritdoc/>
     public override ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
@@ -84,4 +89,5 @@ public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : 
 
         return (ValidationProblemDetails)context.ProblemDetails;
     }
+    #endregion
 }

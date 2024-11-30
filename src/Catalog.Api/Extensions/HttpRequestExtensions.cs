@@ -9,7 +9,7 @@ namespace Catalog.Api.Extensions;
 internal static class HttpRequestExtensions
 {
     /// <summary>
-    /// Returns a formatted string representing the route for the requested resource.
+    /// Returns a string representation of the route for the requested resource.
     /// </summary>
     /// <remarks>
     /// The format is as follows:<br/>
@@ -20,7 +20,7 @@ internal static class HttpRequestExtensions
     /// </remarks>
     /// <param name="request"></param>
     /// <returns>
-    /// A formatted string representing the route for the requested resource.
+    /// A string representation of the route for the requested resource.
     /// </returns>
     internal static string GetFormattedRouteWithQuery(this HttpRequest request)
     {

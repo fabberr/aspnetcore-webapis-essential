@@ -5,28 +5,56 @@ using Catalog.Api.Constants;
 using Catalog.Api.Extensions;
 using Catalog.Core.Models.Settings;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Middlewares;
 
-internal readonly record struct AllowedRange(uint Min, uint Max)
+/// <summary>
+///     Represents a valid range for a <see cref="uint"/> value.
+/// </summary>
+/// <param name="Min">
+///     The minimum allowed value.
+/// </param>
+/// <param name="Max">
+///     The maximum allowed value.
+/// </param>
+internal readonly record struct UInt32AllowedRange(uint Min, uint Max)
 {
-    public static implicit operator (uint Min, uint Max)(AllowedRange value) => (value.Min, value.Max);
+    /// <summary>
+    ///     Implicit conversion operator from <see cref="UInt32AllowedRange"/>
+    ///     to <see cref="(uint Min, uint Max)"/>.
+    /// </summary>
+    /// <param name="value">
+    ///     The <see cref="UInt32AllowedRange"/> instance.
+    /// </param>
+    public static implicit operator (uint Min, uint Max)(UInt32AllowedRange value) => (value.Min, value.Max);
 
-    public static implicit operator AllowedRange((uint Min, uint Max) value) => new(value.Min, value.Max);
+    /// <summary>
+    ///     Implicit conversion operator from <see cref="(uint Min, uint Max)"/>
+    ///     to <see cref="UInt32AllowedRange"/>.
+    /// </summary>
+    /// <param name="value">
+    ///     The <see cref="(uint Min, uint Max)"/> instance.
+    /// </param>
+    public static implicit operator UInt32AllowedRange((uint Min, uint Max) value) => new(value.Min, value.Max);
 }
 
+/// <summary>
+/// Provides custom request validation logic.
+/// </summary>
 public class ValidationMiddleware(RequestDelegate next, ProblemDetailsFactory problemDetailsFactory)
 {
+    #region Fields
     private readonly RequestDelegate _next = next;
     private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
+    #endregion
 
+    #region Middleware Action
     public async Task InvokeAsync(HttpContext httpContext, IOptionsSnapshot<ApiBehaviorSettings> options)
     {
-        var _allowedIntegerParameterValueRanges = new Dictionary<string, AllowedRange>() {
+        var _allowedIntegerParameterValueRanges = new Dictionary<string, UInt32AllowedRange>() {
             ["limit"]  = (Min: 1u, Max: options.Value.MaxItemsPerPage),
             ["offset"] = (Min: 0u, Max: int.MaxValue),
         }.AsReadOnly();
@@ -62,4 +90,5 @@ public class ValidationMiddleware(RequestDelegate next, ProblemDetailsFactory pr
 
         await _next(httpContext);
     }
+    #endregion
 }
