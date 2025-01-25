@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -5,6 +6,7 @@ using System.Text.Json.Serialization;
 using Catalog.Api.Extensions;
 using Catalog.Api.Factories;
 using Catalog.Api.Filters;
+using Catalog.Api.Logging;
 using Catalog.Core.Attributes;
 using Catalog.Core.Context;
 using Catalog.Core.Extensions;
@@ -16,6 +18,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +78,17 @@ builder.Services.Configure<RouteOptions>((options) => {
 
 builder.Services.AddScoped<ApiActionLoggingFilter>();
 #endregion
+
+// #region Logging
+// builder.Logging.AddProvider(
+//     provider: new AppendOnlyFileLoggerProvider(
+//         loggerConfiguration: new() {
+//             LogLevel = LogLevel.Information,
+//             Filename = $"../../logs/{DateOnly.FromDateTime(DateTime.UtcNow):yyyy-MM-dd}"
+//         }
+//     )
+// );
+// #endregion
 
 var app = builder.Build();
 
