@@ -51,7 +51,7 @@ public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : 
             value: context.ProblemDetails,
             options: _stJsonSerializerOptions
         );
-        _logger.LogDebug("Created ProblemDetails object (JSON): {serializedValue}", serializedProblemDetails);
+        _logger.LogDebug("Created {TypeName} object (JSON): {serializedValue}", nameof(ProblemDetails), serializedProblemDetails);
 #endif
 
         return context.ProblemDetails;
@@ -84,7 +84,7 @@ public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : 
             value: (ValidationProblemDetails)context.ProblemDetails,
             options: _stJsonSerializerOptions
         );
-        _logger.LogDebug("Created ValidationProblemDetails object (JSON): {serializedValue}", serializedValidationProblemDetails);
+        _logger.LogDebug("Created {TypeName} object (JSON): {serializedValue}", nameof(ValidationProblemDetails), serializedValidationProblemDetails);
 #endif
 
         return (ValidationProblemDetails)context.ProblemDetails;
