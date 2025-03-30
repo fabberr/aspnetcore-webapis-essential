@@ -10,9 +10,18 @@ using Microsoft.Extensions.Logging;
 namespace Catalog.Api.Factories;
 
 /// <summary>
-/// A <see cref="ProblemDetailsFactory"/> implementation providing custom behavior.
+/// A custom <see cref="ProblemDetailsFactory"/> implementation.
 /// </summary>
-public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : ProblemDetailsFactory
+/// <remarks>
+/// Initializes a new instance of the <see cref="CustomProblemDetailsFactory"/> class.
+/// </remarks>
+/// <param name="logger">
+/// A <see cref="ILogger{TCategoryName}"/> instance.
+/// </param>
+public sealed class CustomProblemDetailsFactory(
+    ILogger<CustomProblemDetailsFactory> logger
+)
+    : ProblemDetailsFactory
 {
     #region Constants
     private readonly static JsonSerializerOptions _stJsonSerializerOptions = new() {
@@ -21,8 +30,8 @@ public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : 
     };
     #endregion
 
-    #region Fields
-    private readonly ILogger<CustomProblemDetailsFactory> _logger = loggerFactory.CreateLogger<CustomProblemDetailsFactory>();
+    #region Dependencies
+    private readonly ILogger<CustomProblemDetailsFactory> _logger = logger;
     #endregion
 
     #region ProblemDetailsFactory
@@ -47,11 +56,11 @@ public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : 
         context.TryAddDefaultExtensions();
 
 #if DEBUG
-        var serializedProblemDetails = JsonSerializer.Serialize(
-            value: context.ProblemDetails,
-            options: _stJsonSerializerOptions
+        _logger.LogDebug(
+            message: Constants.Messages.Logging.Debug.ObjectCreated,
+            DateTime.UtcNow, nameof(ProblemDetails),
+            JsonSerializer.Serialize(context.ProblemDetails, _stJsonSerializerOptions)
         );
-        _logger.LogDebug("Created {TypeName} object (JSON): {serializedValue}", nameof(ProblemDetails), serializedProblemDetails);
 #endif
 
         return context.ProblemDetails;
@@ -80,11 +89,11 @@ public sealed class CustomProblemDetailsFactory(ILoggerFactory loggerFactory) : 
         context.TryAddDefaultExtensions();
 
 #if DEBUG
-        var serializedValidationProblemDetails = JsonSerializer.Serialize(
-            value: (ValidationProblemDetails)context.ProblemDetails,
-            options: _stJsonSerializerOptions
+        _logger.LogDebug(
+            message: Constants.Messages.Logging.Debug.ObjectCreated,
+            DateTime.UtcNow, nameof(ValidationProblemDetails),
+            JsonSerializer.Serialize(context.ProblemDetails, _stJsonSerializerOptions)
         );
-        _logger.LogDebug("Created {TypeName} object (JSON): {serializedValue}", nameof(ValidationProblemDetails), serializedValidationProblemDetails);
 #endif
 
         return (ValidationProblemDetails)context.ProblemDetails;

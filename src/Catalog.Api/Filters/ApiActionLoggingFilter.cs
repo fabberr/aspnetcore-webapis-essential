@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using Catalog.Api.Constants;
 using Catalog.Api.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -7,53 +9,48 @@ using Microsoft.Extensions.Logging;
 namespace Catalog.Api.Filters;
 
 /// <summary>
-/// Implements <see cref="IActionFilter"/>.<br/>
-/// A filter for logging controller actions.
+/// Provides a global API Controller action logging filter.
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="ApiActionLoggingFilter"/> class.
 /// </remarks>
 /// <param name="logger">
-/// A named <see cref="ILogger{TCategoryName}"/> instance.
+/// A <see cref="ILogger{TCategoryName}"/> instance.
 /// </param>
-public class ApiActionLoggingFilter(ILoggerFactory loggerFactory) : IActionFilter
+public class ApiActionLoggingFilter(ILogger<ApiActionLoggingFilter> logger): IAsyncActionFilter
 {
+
+    #region Dependencies
+    private readonly ILogger<ApiActionLoggingFilter> _logger = logger;
+    #endregion
+
     #region Fields
-    private readonly ILogger<ApiActionLoggingFilter> _logger = loggerFactory.CreateLogger<ApiActionLoggingFilter>();
     private readonly long _startingTimestamp = Stopwatch.GetTimestamp();
     #endregion
 
-    #region IActionFilter
+    #region IAsyncActionFilter
     /// <inheritdoc/>
-    public void OnActionExecuting(ActionExecutingContext context) => _logger.LogInformation(
-        """
-        [{Timestamp:dd/MM/yyyy hh:mm:ss.fffffff}] Executing Action: {ActionName}
-        HTTPS: {IsHttps}
-        Route: {Route}
-        Model State: {ModelValidationState}
-        """,
-        DateTime.UtcNow,
-        context.ActionDescriptor.AttributeRouteInfo?.Name ?? context.ActionDescriptor.DisplayName,
-        context.HttpContext.Request.IsHttps,
-        context.HttpContext.Request.GetFormattedRouteWithQuery(),
-        context.ModelState.ValidationState
-    );
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        var actionName = context.ActionDescriptor.AttributeRouteInfo?.Name ?? context.ActionDescriptor.DisplayName;
+        var route = context.HttpContext.Request.GetFormattedRouteWithQuery();
 
-    /// <inheritdoc/>
-    public void OnActionExecuted(ActionExecutedContext context) => _logger.LogInformation(
-        """
-        [{Timestamp:dd/MM/yyyy hh:mm:ss.fffffff}] Executed Action: {ActionName}
-        HTTPS: {IsHttps}
-        Route: {Route}
-        Response Status Code: {HttpResponseStatusCode}
-        Elapsed Time: {ElapsedTime}
-        """,
-        DateTime.UtcNow,
-        context.ActionDescriptor.AttributeRouteInfo?.Name ?? context.ActionDescriptor.DisplayName,
-        context.HttpContext.Request.IsHttps,
-        context.HttpContext.Request.GetFormattedRouteWithQuery(),
-        context.HttpContext.Response.StatusCode,
-        Stopwatch.GetElapsedTime(_startingTimestamp)
-    );
+        _logger.LogInformation(
+            message: Messages.Logging.Information.ActionStartedExecuting,
+            DateTime.UtcNow, actionName,
+            route,
+            context.ModelState.ValidationState
+        );
+        
+        await next(); // Invoke the next Action Filter in the pipeline or the Action itself.
+
+        _logger.LogInformation(
+            message: Messages.Logging.Information.ActionFinishedExecuting,
+            DateTime.UtcNow, actionName,
+            route,
+            context.HttpContext.Response.StatusCode,
+            Stopwatch.GetElapsedTime(_startingTimestamp)
+        );
+    }
     #endregion
 }
