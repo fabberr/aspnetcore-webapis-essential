@@ -38,7 +38,7 @@ internal static class Messages
                 [{Timestamp:yyyy.MM.dd hh:mm:ss.fffffff}] Executing Action: {ActionName}
                 Route: {Route}
                 Model State: {ModelValidationState}
-            """;
+                """;
 
             /// <summary>
             /// An Action has finished executing.
@@ -48,7 +48,7 @@ internal static class Messages
                 Route: {Route}
                 Response Status Code: {HttpResponseStatusCode}
                 Elapsed Time: {ElapsedTime}
-            """;
+                """;
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ internal static class Messages
                 [{Timestamp:yyyy.MM.dd hh:mm:ss.fffffff}] An unhandled exception was thrown while executing Action: {ActionName}
                 Route: {Route}
                 Exception: {Exception}
-            """;
+                """;
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ internal static class Messages
             internal const string ObjectCreated = """
                 [{Timestamp:yyyy.MM.dd hh:mm:ss.fffffff}] Created {TypeName} object
                 Object: {SerializedObject}
-            """;
+                """;
         }
     }
 }
