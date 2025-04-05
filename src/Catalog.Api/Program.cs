@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Catalog.Api.Extensions;
 using Catalog.Api.Factories;
+using Catalog.Core.Abstractions.Repositories;
+using Catalog.Core.Abstractions.Repositories.Interfaces;
 using Catalog.Core.Attributes;
 using Catalog.Core.Context;
 using Catalog.Core.Extensions;
@@ -52,7 +54,11 @@ builder.Services.AddDbContext<CatalogDbContext>(
     optionsLifetime: ServiceLifetime.Scoped
 );
 
-builder.Services.AddControllers()
+builder.Services
+    .AddScoped<ICategoryRepository, EntityFrameworkCoreCategoryRepository>();
+
+builder.Services
+    .AddControllers()
     .AddJsonOptions((options) => {
         options.JsonSerializerOptions.AllowTrailingCommas = false;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
