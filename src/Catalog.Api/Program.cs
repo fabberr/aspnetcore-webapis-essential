@@ -47,12 +47,13 @@ foreach (var type in configurationSectionTypes)
 #endregion
 
 #region Services
-builder.Services.AddDbContext<CatalogDbContext>(
-    optionsAction: (optionsBuilder) => optionsBuilder
-        .ConfigureDefaultDatabaseConnection(appSettings),
-    contextLifetime: ServiceLifetime.Scoped,
-    optionsLifetime: ServiceLifetime.Scoped
-);
+builder.Services
+    .AddDbContext<CatalogDbContext>(
+        optionsAction: (optionsBuilder) => optionsBuilder
+            .ConfigureDefaultDatabaseConnection(appSettings),
+        contextLifetime: ServiceLifetime.Scoped,
+        optionsLifetime: ServiceLifetime.Scoped
+    );
 
 builder.Services
     .AddScoped<ICategoryRepository, EntityFrameworkCoreCategoryRepository>();
@@ -68,15 +69,18 @@ builder.Services
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
-builder.Services.AddTransient<ProblemDetailsFactory, CustomProblemDetailsFactory>();
+builder.Services
+    .AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen();
 
-builder.Services.Configure<RouteOptions>((options) => {
-    options.LowercaseUrls = true;
-    options.LowercaseQueryStrings = true;
-});
+builder.Services
+    .Configure<RouteOptions>((options) => {
+        options.LowercaseUrls = true;
+        options.LowercaseQueryStrings = true;
+    });
 #endregion
 
 var app = builder.Build();
