@@ -34,7 +34,12 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region GET
     [HttpGet(Name = GetCategoriesActionName)]
-    public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesAsync(IOptionsSnapshot<ApiBehaviorSettings> options, bool includeProducts, uint? limit = null, uint offset = 0u)
+    public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesAsync(
+        IOptionsSnapshot<ApiBehaviorSettings> options,
+        bool includeProducts,
+        uint? limit = null,
+        uint offset = 0u
+    )
     {
         var categoriesQuery = _dbContext.Categories.AsNoTracking()
             .OrderBy(c => c.Id)
@@ -54,7 +59,10 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     }
 
     [HttpGet(template: "{id:int}", Name = GetCategoryByIdActionName)]
-    public async Task<ActionResult<Category>> GetCategoryByIdAsync(int id, bool includeProducts)
+    public async Task<ActionResult<Category>> GetCategoryByIdAsync(
+        int id,
+        bool includeProducts
+    )
     {
         if (id <= 0)
         {
@@ -77,7 +85,12 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
     }
 
     [HttpGet(template: "{id:int}/products", Name = GetCategoryProductsActionName)]
-    public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, int id, uint? limit = null, uint offset = 0u)
+    public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProductsAsync(
+        IOptionsSnapshot<ApiBehaviorSettings> options,
+        int id,
+        uint? limit = null,
+        uint offset = 0u
+    )
     {
         if (id <= 0)
         {
@@ -108,7 +121,9 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region POST
     [HttpPost(Name = CreateCategoryActionName)]
-    public async Task<ActionResult<Category>> CreateCategoryAsync(Category category)
+    public async Task<ActionResult<Category>> CreateCategoryAsync(
+        Category category
+    )
     {
         await _dbContext.AddAsync(category);
         await _dbContext.SaveChangesAsync();
@@ -123,7 +138,10 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = UpdateCategoryActionName)]
-    public async Task<ActionResult<Category>> UpdateCategoryAsync(int id, Category category)
+    public async Task<ActionResult<Category>> UpdateCategoryAsync(
+        int id,
+        Category category
+    )
     {
         if (id <= 0)
         {
@@ -149,7 +167,9 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = DeleteCategoryActionName)]
-    public async Task<ActionResult<Category>> DeleteCategoryAsync(int id)
+    public async Task<ActionResult<Category>> DeleteCategoryAsync(
+        int id
+    )
     {
         if (id <= 0)
         {

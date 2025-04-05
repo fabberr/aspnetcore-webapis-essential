@@ -32,7 +32,11 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region GET
     [HttpGet(Name = GetProductsActionName)]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync(IOptionsSnapshot<ApiBehaviorSettings> options, uint? limit = null, uint offset = 0u)
+    public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync(
+        IOptionsSnapshot<ApiBehaviorSettings> options,
+        uint? limit = null,
+        uint offset = 0u
+    )
     {
         var products = await _dbContext.Products.AsNoTracking()
             .OrderBy(p => p.Id)
@@ -49,7 +53,9 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
     }
 
     [HttpGet(template: "{id:int}", Name = GetProductByIdActionName)]
-    public async Task<ActionResult<Product>> GetProductByIdAsync(int id)
+    public async Task<ActionResult<Product>> GetProductByIdAsync(
+        int id
+    )
     {
         if (id <= 0)
         {
@@ -70,7 +76,9 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region POST
     [HttpPost(Name = CreateProductActionName)]
-    public async Task<ActionResult<Product>> CreateProductAsync(Product product)
+    public async Task<ActionResult<Product>> CreateProductAsync(
+        Product product
+    )
     {
         await _dbContext.AddAsync(product);
         await _dbContext.SaveChangesAsync();
@@ -85,7 +93,10 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = UpdateProductActionName)]
-    public async Task<ActionResult<Product>> UpdateProductAsync(int id, Product product)
+    public async Task<ActionResult<Product>> UpdateProductAsync(
+        int id,
+        Product product
+    )
     {
         if (id <= 0)
         {
@@ -111,7 +122,9 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductAsync))]
-    public async Task<ActionResult<Product>> DeleteProductAsync(int id)
+    public async Task<ActionResult<Product>> DeleteProductAsync(
+        int id
+    )
     {
         if (id <= 0)
         {
