@@ -16,9 +16,9 @@ internal static class Messages
         internal const string InvalidValue = "The value '{0}' is not valid.";
         
         /// <summary>
-        /// The provided resouce identifier does not match the entity id.
+        /// The specified resouce key does not match the entity key.
         /// </summary>
-        internal const string ResourceIdMismatch = "The resource id '{0}' does not match the entity id '{1}'.";
+        internal const string SpecifiedKeyDoesNotMatchEntityKey = "The specified key '{0}' does not match the entity key '{1}'.";
     }
 
     /// <summary>
