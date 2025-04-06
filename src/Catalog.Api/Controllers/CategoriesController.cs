@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
-using Catalog.Core.Abstractions.Repositories.Interfaces;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
+using Catalog.Core.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 

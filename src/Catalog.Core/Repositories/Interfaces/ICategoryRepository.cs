@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Core.Abstractions.Repositories.Interfaces;
+namespace Catalog.Core.Repositories.Interfaces;
 
 /// <inheritdoc/>
 public interface ICategoryRepository : IRepository<Category, int>

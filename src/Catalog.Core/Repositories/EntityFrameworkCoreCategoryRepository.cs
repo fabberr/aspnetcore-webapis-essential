@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Core.Abstractions.Repositories.Generic;
-using Catalog.Core.Abstractions.Repositories.Interfaces;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Catalog.Core.Abstractions.Repositories;
+namespace Catalog.Core.Repositories;
 
 /// <summary>
 /// Implements <see cref="EntityFrameworkCoreRepositoryBase{TEntity, TKey}"/>
