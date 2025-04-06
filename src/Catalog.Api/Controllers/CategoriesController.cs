@@ -16,7 +16,7 @@ public sealed class CategoriesController(
 )
     : CatalogApiController
 {
-    #region Fields
+    #region Dependencies
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
     #endregion
 
@@ -154,13 +154,7 @@ public sealed class CategoriesController(
             currentCategory.ImageUri = category.ImageUri;
         }
 
-        var updatedCategory = await _categoryRepository.UpdateAsync(entity: currentCategory);
-        if (updatedCategory is null)
-        {
-            return Problem();
-        }
-
-        return updatedCategory;
+        return await _categoryRepository.UpdateAsync(entity: currentCategory);
     }
     #endregion
 
@@ -182,15 +176,10 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        var deletedCategory = await _categoryRepository.DeleteAsync(entity: category);
-        if (deletedCategory is null)
-        {
-            return Problem();
-        }
-
-        return deletedCategory;
+        return await _categoryRepository.DeleteAsync(entity: category);
     }
     #endregion
 }
 
 // @todo: (when DTOs are implemented) make all properties except `id` optional for PUT routes
+// @todo: move common functionality to base controller

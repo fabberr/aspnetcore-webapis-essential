@@ -5,6 +5,7 @@ using Catalog.Api.Constants;
 using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
+using Catalog.Core.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -12,48 +13,38 @@ using Microsoft.Extensions.Options;
 namespace Catalog.Api.Controllers;
 
 [Route("api/[controller]")]
-public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiController
+public sealed class ProductsController(
+    IProductRepository productRepository
+)
+    : CatalogApiController
 {
-    #region Constants
-    private const string GetProductsActionName      = "GetProducts";
-
-    private const string GetProductByIdActionName   = "GetProductById";
-
-    private const string CreateProductActionName    = "CreateProduct";
-
-    private const string UpdateProductActionName    = "UpdateProduct";
-
-    private const string DeleteProductActionName    = "DeleteProduct";
-    #endregion
-
-    #region Fields
-    private readonly CatalogDbContext _dbContext = dbContext;
+    #region Dependencies
+    private readonly IProductRepository _productRepository = productRepository;
     #endregion
 
     #region GET
-    [HttpGet(Name = GetProductsActionName)]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync(
+    [HttpGet(Name = nameof(GetProducts))]
+    public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         uint? limit = null,
         uint offset = 0u
     )
     {
-        var products = await _dbContext.Products.AsNoTracking()
-            .OrderBy(p => p.Id)
-            .Skip((int)offset)
-            .Take((int)(limit ?? options.Value.DefaultItemsPerPage))
-            .ToArrayAsync();
+        var products = await _productRepository.GetAsync(
+            limit: limit ?? options.Value.DefaultItemsPerPage,
+            offset: offset
+        );
 
-        if (products is null or { Length: 0 })
+        if (products is null)
         {
             return NotFound();
         }
 
-        return products;
+        return products.ToArray();
     }
 
-    [HttpGet(template: "{id:int}", Name = GetProductByIdActionName)]
-    public async Task<ActionResult<Product>> GetProductByIdAsync(
+    [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
+    public async Task<ActionResult<Product>> GetProductById(
         int id
     )
     {
@@ -63,7 +54,7 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
             return ValidationProblem(ModelState);
         }
 
-        var product = await _dbContext.Products.FindAsync(id);
+        var product = await _productRepository.GetAsync(key: id);
 
         if (product is null)
         {
@@ -75,25 +66,24 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
     #endregion
 
     #region POST
-    [HttpPost(Name = CreateProductActionName)]
-    public async Task<ActionResult<Product>> CreateProductAsync(
+    [HttpPost(Name = nameof(CreateProduct))]
+    public async Task<ActionResult<Product>> CreateProduct(
         Product product
     )
     {
-        await _dbContext.AddAsync(product);
-        await _dbContext.SaveChangesAsync();
+        var createdProduct = await _productRepository.CreateAsync(entity: product);
 
         return CreatedAtRoute(
-            routeName: GetProductByIdActionName,
+            routeName: nameof(GetProductById),
             routeValues: new { id = product.Id },
-            value: product
+            value: createdProduct
         );
     }
     #endregion
 
     #region PUT
-    [HttpPut(template: "{id:int}", Name = UpdateProductActionName)]
-    public async Task<ActionResult<Product>> UpdateProductAsync(
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateProduct))]
+    public async Task<ActionResult<Product>> UpdateProduct(
         int id,
         Product product
     )
@@ -113,16 +103,44 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
             );
         }
 
-        _dbContext.Entry(product).State = EntityState.Modified;
-        await _dbContext.SaveChangesAsync();
+        var currentProduct = await _productRepository.GetAsync(key: id);
+        if (currentProduct is null)
+        {
+            return NotFound();
+        }
 
-        return product;
+        if (product.Hidden != currentProduct.Hidden)
+        {
+            currentProduct.Hidden = product.Hidden;
+        }
+        if (product.Name is not "" && product.Name != currentProduct.Name)
+        {
+            currentProduct.Name = product.Name;
+        }
+        if (product.Description is not "" && product.Description != currentProduct.Description)
+        {
+            currentProduct.Description = product.Description;
+        }
+        if (product.Price != default && product.Price != currentProduct.Price)
+        {
+            currentProduct.Price = product.Price;
+        }
+        if (product.Stock != default && product.Stock != currentProduct.Stock)
+        {
+            currentProduct.Stock = product.Stock;
+        }
+        if (product.ImageUri is not "" && product.ImageUri != currentProduct.ImageUri)
+        {
+            currentProduct.ImageUri = product.ImageUri;
+        }
+
+        return await _productRepository.UpdateAsync(entity: currentProduct);
     }
     #endregion
 
     #region DELETE
-    [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductAsync))]
-    public async Task<ActionResult<Product>> DeleteProductAsync(
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
+    public async Task<ActionResult<Product>> DeleteProduct(
         int id
     )
     {
@@ -132,17 +150,13 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
             return ValidationProblem(ModelState);
         }
 
-        var product = await _dbContext.Products.FindAsync(id);
-
-        if (product is null)
+        var currentProduct = await _productRepository.GetAsync(key: id);
+        if (currentProduct is null)
         {
             return NotFound();
         }
 
-        _dbContext.Remove(product);
-        await _dbContext.SaveChangesAsync();
-
-        return product;
+        return await _productRepository.DeleteAsync(entity: currentProduct);
     }
     #endregion
 }

@@ -56,7 +56,8 @@ builder.Services
     );
 
 builder.Services
-    .AddScoped<ICategoryRepository, EntityFrameworkCoreCategoryRepository>();
+    .AddScoped<ICategoryRepository, CategoryEntityFrameworkCoreRepository>()
+    .AddScoped<IProductRepository, ProductEntityFrameworkCoreRepository>();
 
 builder.Services
     .AddControllers()
