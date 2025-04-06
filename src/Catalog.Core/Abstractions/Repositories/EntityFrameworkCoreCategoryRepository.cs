@@ -26,49 +26,53 @@ public sealed class EntityFrameworkCoreCategoryRepository(CatalogDbContext catal
     , ICategoryRepository
 {
     #region EntityFrameworkCoreRepositoryBase<Category, int> (implementation)
-    public override Task<IQueryable<Category>> QueryAsync()
+    public override async Task<IEnumerable<Category>?> GetAsync(uint limit = 10, uint offset = 0, bool includeRelated = false)
     {
-        throw new System.NotImplementedException();
-    }
+        var query = _catalogDbContext.Categories
+            .AsNoTracking()
+            .OrderBy(c => c.Id)
+            .Skip((int)offset)
+            .Take((int)limit);
 
-    public override Task<IEnumerable<Category>?> GetAsync(uint limit = 10, uint offset = 0, bool includeRelated = false)
-    {
-        throw new System.NotImplementedException();
+        if (includeRelated)
+        {
+            query = query.Include(c => c.Products);
+        }
+
+        return await query.ToArrayAsync();
     }
 
     public override Task<Category?> GetAsync(int key, bool includeRelated = false)
     {
         if (includeRelated is true)
         {
-            return _catalogDbContext.Categories.AsNoTracking()
+            return _catalogDbContext.Categories
+                .AsNoTracking()
                 .Include(c => c.Products)
                 .FirstOrDefaultAsync(c => c.Id == key);
         }
 
-        return _catalogDbContext.Categories.FindAsync(key)
+        return _catalogDbContext.Categories
+            .FindAsync(key)
             .AsTask();
-    }
-
-    public override Task<Category?> CreateAsync(Category entity)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override Task<Category?> DeleteAsync(int key)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public override Task<Category?> UpdateAsync(int key, Category entity)
-    {
-        throw new System.NotImplementedException();
     }
     #endregion
 
     #region ICategoryRepository
-    public Task<IEnumerable<Product>?> GetProducts(int key)
+    public async Task<IEnumerable<Product>?> GetProducts(int key, uint limit = 10u, uint offset = 0u)
     {
-        throw new System.NotImplementedException();
+        return await _catalogDbContext.Categories
+            .AsNoTracking()
+            .Where(c => c.Id == key)
+            .Join(
+                _catalogDbContext.Products.AsNoTracking(),
+                category => category.Id, product => product.CategoryId,
+                (_, product) => product
+            )
+            .OrderBy(p => p.Id)
+            .Skip((int)offset)
+            .Take((int)limit)
+            .ToArrayAsync();
     }
     #endregion
 }

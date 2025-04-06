@@ -21,37 +21,32 @@ public interface IModifiableRepository<TEntity, TKey>
     /// Creates a new entity of type <typeparamref name="TEntity"/>.
     /// </summary>
     /// <param name="entity">
-    /// Data to create the new entity with.
+    /// The entity to create.
     /// </param>
     /// <returns>
-    /// The created entity, or <see langword="null"/> if the operation failed.
+    /// The created entity.
     /// </returns>
-    Task<TEntity?> CreateAsync(TEntity entity);
+    Task<TEntity> CreateAsync(TEntity entity);
 
     /// <summary>
-    /// Updates an existing entity of type <typeparamref name="TEntity"/>, given
-    /// its key.
+    /// Updates an existing entity of type <typeparamref name="TEntity"/>.
     /// </summary>
-    /// <param name="key">
-    /// The entity's key.
-    /// </param>
     /// <param name="entity">
-    /// Data to modify the existing entity with.
+    /// The entity to update.
     /// </param>
     /// <returns>
-    /// The modified entity, or <see langword="null"/> if the operation failed.
+    /// The updated entity.
     /// </returns>
-    Task<TEntity?> UpdateAsync(TKey key, TEntity entity);
+    Task<TEntity> UpdateAsync(TEntity entity);
 
     /// <summary>
-    /// Deletes an existing entity of type <typeparamref name="TEntity"/>, given
-    /// its key.
+    /// Deletes an existing entity of type <typeparamref name="TEntity"/>.
     /// </summary>
-    /// <param name="key">
-    /// The entity's key.
+    /// <param name="entity">
+    /// The entity to delete.
     /// </param>
     /// <returns>
-    /// The deleted entity, or <see langword="null"/> if the operation failed.
+    /// The deleted entity.
     /// </returns>
-    Task<TEntity?> DeleteAsync(TKey key);
+    Task<TEntity> DeleteAsync(TEntity entity);
 }

@@ -108,7 +108,7 @@ public sealed class ProductsController(CatalogDbContext dbContext) : CatalogApiC
         {
             ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.ResourceIdMismatch, id, product.Id),
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, product.Id),
                 modelStateDictionary: ModelState
             );
         }

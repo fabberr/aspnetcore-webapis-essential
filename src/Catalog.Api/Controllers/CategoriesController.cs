@@ -2,64 +2,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
-using Catalog.Core.Context;
+using Catalog.Core.Abstractions.Repositories.Interfaces;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Controllers;
 
 [Route("api/[controller]")]
-public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogApiController
+public sealed class CategoriesController(
+    ICategoryRepository categoryRepository
+)
+    : CatalogApiController
 {
-    #region Constants
-    private const string GetCategoriesActionName        = "GetCategories";
-
-    private const string GetCategoryByIdActionName      = "GetCategoryById";
-
-    private const string GetCategoryProductsActionName  = "GetCategoryProducts";
-
-    private const string CreateCategoryActionName       = "CreateCategory";
-
-    private const string UpdateCategoryActionName       = "UpdateCategory";
-
-    private const string DeleteCategoryActionName       = "DeleteCategory";
-    #endregion
-
     #region Fields
-    private readonly CatalogDbContext _dbContext = dbContext;
+    private readonly ICategoryRepository _categoryRepository = categoryRepository;
     #endregion
 
     #region GET
-    [HttpGet(Name = GetCategoriesActionName)]
-    public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesAsync(
+    [HttpGet(Name = nameof(GetCategories))]
+    public async Task<ActionResult<IEnumerable<Category>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         bool includeProducts,
         uint? limit = null,
         uint offset = 0u
     )
     {
-        var categoriesQuery = _dbContext.Categories.AsNoTracking()
-            .OrderBy(c => c.Id)
-            .Skip((int)offset)
-            .Take((int)(limit ?? options.Value.DefaultItemsPerPage));
+        var categories = await _categoryRepository.GetAsync(
+            limit: limit ?? options.Value.DefaultItemsPerPage,
+            offset: offset,
+            includeRelated: includeProducts
+        );
 
-        var categories = includeProducts
-            ? await categoriesQuery.Include(c => c.Products).ToArrayAsync()
-            : await categoriesQuery.ToArrayAsync();
-
-        if (categories is null or { Length: 0 })
+        if (categories is null)
         {
             return NotFound();
         }
 
-        return categories;
+        return categories.ToArray();
     }
 
-    [HttpGet(template: "{id:int}", Name = GetCategoryByIdActionName)]
-    public async Task<ActionResult<Category>> GetCategoryByIdAsync(
+    [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
+    public async Task<ActionResult<Category>> GetCategoryById(
         int id,
         bool includeProducts
     )
@@ -70,11 +55,10 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             return ValidationProblem(ModelState);
         }
 
-        var category = includeProducts
-            ? await _dbContext.Categories.AsNoTracking()
-                .Include(c => c.Products)
-                .FirstOrDefaultAsync(c => c.Id == id)
-            : await _dbContext.Categories.FindAsync(id);
+        var category = await _categoryRepository.GetAsync(
+            key: id,
+            includeRelated: includeProducts
+        );
 
         if (category is null)
         {
@@ -84,8 +68,8 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         return category;
     }
 
-    [HttpGet(template: "{id:int}/products", Name = GetCategoryProductsActionName)]
-    public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProductsAsync(
+    [HttpGet(template: "{id:int}/products", Name = nameof(GetCategoryProducts))]
+    public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         int id,
         uint? limit = null,
@@ -98,46 +82,39 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             return ValidationProblem(ModelState);
         }
 
-        var products = await _dbContext.Categories.AsNoTracking()
-            .Where(c => c.Id == id)
-            .Join(
-                _dbContext.Products.AsNoTracking(),
-                category => category.Id, product => product.CategoryId,
-                (_, product) => product
-            )
-            .OrderBy(p => p.Id)
-            .Skip((int)offset)
-            .Take((int)(limit ?? options.Value.DefaultItemsPerPage))
-            .ToArrayAsync();
+        var products = await _categoryRepository.GetProducts(
+            key: id,
+            limit: limit ?? options.Value.DefaultItemsPerPage,
+            offset: offset
+        );
 
-        if (products is null or { Length: 0 })
+        if (products is null)
         {
             return NotFound();
         }
 
-        return products;
+        return products.ToArray();
     }
     #endregion
 
     #region POST
-    [HttpPost(Name = CreateCategoryActionName)]
-    public async Task<ActionResult<Category>> CreateCategoryAsync(
+    [HttpPost(Name = nameof(CreateCategory))]
+    public async Task<ActionResult<Category>> CreateCategory(
         Category category
     )
     {
-        await _dbContext.AddAsync(category);
-        await _dbContext.SaveChangesAsync();
+        var createdCategory = await _categoryRepository.CreateAsync(entity: category);
 
         return CreatedAtRoute(
-            routeName: GetCategoryByIdActionName,
+            routeName: nameof(GetCategoryById),
             routeValues: new { id = category.Id },
-            value: category
+            value: createdCategory
         );
     }
     #endregion
 
     #region PUT
-    [HttpPut(template: "{id:int}", Name = UpdateCategoryActionName)]
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryAsync))]
     public async Task<ActionResult<Category>> UpdateCategoryAsync(
         int id,
         Category category
@@ -153,21 +130,43 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
         {
             ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.ResourceIdMismatch, id, category.Id),
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, category.Id),
                 modelStateDictionary: ModelState
             );
         }
 
-        _dbContext.Entry(category).State = EntityState.Modified;
-        await _dbContext.SaveChangesAsync();
+        var currentCategory = await _categoryRepository.GetAsync(key: id);
+        if (currentCategory is null)
+        {
+            return NotFound();
+        }
 
-        return category;
+        if (category.Hidden != currentCategory.Hidden)
+        {
+            currentCategory.Hidden = category.Hidden;
+        }
+        if (category.Name is not "" && category.Name != currentCategory.Name)
+        {
+            currentCategory.Name = category.Name;
+        }
+        if (category.ImageUri is not "" && category.ImageUri != currentCategory.ImageUri)
+        {
+            currentCategory.ImageUri = category.ImageUri;
+        }
+
+        var updatedCategory = await _categoryRepository.UpdateAsync(entity: currentCategory);
+        if (updatedCategory is null)
+        {
+            return Problem();
+        }
+
+        return updatedCategory;
     }
     #endregion
 
     #region DELETE
-    [HttpDelete(template: "{id:int}", Name = DeleteCategoryActionName)]
-    public async Task<ActionResult<Category>> DeleteCategoryAsync(
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
+    public async Task<ActionResult<Category>> DeleteCategory(
         int id
     )
     {
@@ -177,17 +176,21 @@ public sealed class CategoriesController(CatalogDbContext dbContext) : CatalogAp
             return ValidationProblem(ModelState);
         }
 
-        var category = await _dbContext.Categories.FindAsync(id);
-
+        var category = await _categoryRepository.GetAsync(key: id);
         if (category is null)
         {
             return NotFound();
         }
 
-        _dbContext.Remove(category);
-        await _dbContext.SaveChangesAsync();
+        var deletedCategory = await _categoryRepository.DeleteAsync(entity: category);
+        if (deletedCategory is null)
+        {
+            return Problem();
+        }
 
-        return category;
+        return deletedCategory;
     }
     #endregion
 }
+
+// @todo: (when DTOs are implemented) make all properties except `id` optional for PUT routes

@@ -36,16 +36,35 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
     #endregion
 
     #region IRepository<TEntity, TKey> (abstract)
-    public abstract Task<IQueryable<TEntity>> QueryAsync();
-
     public abstract Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10, uint offset = 0, bool includeRelated = false);
 
     public abstract Task<TEntity?> GetAsync(TKey key, bool includeRelated = false);
 
-    public abstract Task<TEntity?> CreateAsync(TEntity entity);
+    public async Task<TEntity> CreateAsync(TEntity entity)
+    {
+        var createdEntry = await _catalogDbContext.AddAsync(entity);
 
-    public abstract Task<TEntity?> UpdateAsync(TKey key, TEntity entity);
+        await _catalogDbContext.SaveChangesAsync();
 
-    public abstract Task<TEntity?> DeleteAsync(TKey key);
+        return createdEntry.Entity;
+    }
+
+    public async Task<TEntity> UpdateAsync(TEntity entity)
+    {
+        _catalogDbContext.Entry(entity).State = EntityState.Modified;
+
+        await _catalogDbContext.SaveChangesAsync();
+
+        return entity;
+    }
+
+    public async Task<TEntity> DeleteAsync(TEntity entity)
+    {
+        _catalogDbContext.Remove(entity);
+
+        await _catalogDbContext.SaveChangesAsync();
+
+        return entity;
+    }
     #endregion
 }

@@ -21,24 +21,14 @@ public interface IQueryableRepository<TEntity, TKey>
     where TKey : notnull
 {
     /// <summary>
-    /// Exposes a <see cref="IQueryable{T}"/> object for querying entities of
-    /// type <typeparamref name="TEntity"/>.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="IQueryable{T}"/> object for querying entities of type
-    /// <typeparamref name="TEntity"/>.
-    /// </returns>
-    Task<IQueryable<TEntity>> QueryAsync();
-
-    /// <summary>
     /// Queries for entities of type <typeparamref name="TEntity"/>, in
     /// ascending <see cref="EntityBase.Id"/> order.
     /// </summary>
     /// <param name="limit">
-    /// Delimits the number of entities which will be fetched at most.
+    /// Delimits the number of entries which will be fetched at most.
     /// </param>
     /// <param name="offset">
-    /// Number of entities to skip.
+    /// Number of entries to skip.
     /// </param>
     /// <param name="includeRelated">
     /// Whether to include related entities in the query or not.
