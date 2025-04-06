@@ -107,7 +107,6 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        if (product.Hidden != currentProduct.Hidden)
         {
             currentProduct.Hidden = product.Hidden;
         }
@@ -139,6 +138,7 @@ public sealed class ProductsController(
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
     public async Task<ActionResult<Product>> DeleteProduct(
+        IOptionsSnapshot<ApiBehaviorSettings> options,
         int id
     )
     {
@@ -154,7 +154,20 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        return await _productRepository.DeleteAsync(entity: currentProduct);
+        if (options.Value.DeleteBehavior is ApiDeleteBehavior.Logical)
+        {
+            currentProduct.Hidden = true;
+        }
+
+        var deletedCategory = await (options.Value.DeleteBehavior switch {
+            ApiDeleteBehavior.Physical
+                => _productRepository.DeleteAsync(entity: currentProduct),
+            ApiDeleteBehavior.Logical
+                => _productRepository.UpdateAsync(entity: currentProduct),
+            _ => throw new System.InvalidOperationException(),
+        });
+
+        return deletedCategory;
     }
     #endregion
 }

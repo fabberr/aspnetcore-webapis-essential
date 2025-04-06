@@ -43,17 +43,27 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
     protected abstract DbSet<TEntity> EntityDbSet { get; }
     #endregion
 
-    #region IRepository<TEntity, TKey> (abstract)
+    #region IRepository<TEntity, TKey>
     public async Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10, uint offset = 0)
     {
         return await EntityDbSet.AsNoTracking()
-            .OrderBy(c => c.Id)
+            .Where(entity => !entity.Hidden)
+            .OrderBy(entity => entity.Id)
             .Skip((int)offset)
             .Take((int)limit)
             .ToArrayAsync();
     }
 
-    public async Task<TEntity?> GetAsync(TKey key) => await EntityDbSet.FindAsync(key);
+    public async Task<TEntity?> GetAsync(TKey key)
+    {
+        var entity = await EntityDbSet.FindAsync(key);
+        if (entity is { Hidden: true })
+        {
+            return null;
+        }
+
+        return entity;
+    }
 
     public async Task<TEntity> CreateAsync(TEntity entity)
     {

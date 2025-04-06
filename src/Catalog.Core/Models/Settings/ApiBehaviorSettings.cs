@@ -17,4 +17,25 @@ public sealed class ApiBehaviorSettings
     /// The default number of items to return for paged requests.
     /// </summary>
     public uint DefaultItemsPerPage { get; init; } = default;
+
+    public ApiDeleteBehavior DeleteBehavior { get; init; } = default;
+}
+
+/// <summary>
+/// Enumerates the supported approaches for deleting entitites on the data store
+/// through an API call.
+/// </summary>
+public enum ApiDeleteBehavior
+{
+    /// <summary>
+    /// Physically deletes the data from the data store.
+    /// </summary>
+    Physical = default,
+
+    /// <summary>
+    /// Mark the entry as hidden such that it's treated as deleted on all
+    /// subsequent queries from the data store.<br/>
+    /// Once marked as hidden, an entity cannot be unhidden via the API.
+    /// </summary>
+    Logical,
 }

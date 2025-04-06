@@ -135,7 +135,6 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        if (category.Hidden != currentCategory.Hidden)
         {
             currentCategory.Hidden = category.Hidden;
         }
@@ -155,6 +154,7 @@ public sealed class CategoriesController(
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
     public async Task<ActionResult<Category>> DeleteCategory(
+        IOptionsSnapshot<ApiBehaviorSettings> options,
         int id
     )
     {
@@ -164,13 +164,26 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var category = await _categoryRepository.GetAsync(key: id);
-        if (category is null)
+        var currentCategory = await _categoryRepository.GetAsync(key: id);
+        if (currentCategory is null)
         {
             return NotFound();
         }
 
-        return await _categoryRepository.DeleteAsync(entity: category);
+        if (options.Value.DeleteBehavior is ApiDeleteBehavior.Logical)
+        {
+            currentCategory.Hidden = true;
+        }
+
+        var deletedCategory = await (options.Value.DeleteBehavior switch {
+            ApiDeleteBehavior.Physical
+                => _categoryRepository.DeleteAsync(entity: currentCategory),
+            ApiDeleteBehavior.Logical
+                => _categoryRepository.UpdateAsync(entity: currentCategory),
+            _ => throw new System.InvalidOperationException(),
+        });
+
+        return deletedCategory;
     }
     #endregion
 }
