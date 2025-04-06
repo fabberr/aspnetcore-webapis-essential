@@ -63,10 +63,12 @@ builder.Services
     .AddControllers()
     .AddJsonOptions((options) => {
         options.JsonSerializerOptions.AllowTrailingCommas = false;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+        options.JsonSerializerOptions.IncludeFields = false;
         options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.ReadCommentHandling = JsonCommentHandling.Skip;
+        options.JsonSerializerOptions.ReadCommentHandling = JsonCommentHandling.Disallow;
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 

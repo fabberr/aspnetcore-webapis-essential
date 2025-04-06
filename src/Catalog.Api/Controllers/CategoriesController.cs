@@ -24,15 +24,13 @@ public sealed class CategoriesController(
     [HttpGet(Name = nameof(GetCategories))]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        bool includeProducts,
         uint? limit = null,
         uint offset = 0u
     )
     {
         var categories = await _categoryRepository.GetAsync(
             limit: limit ?? options.Value.DefaultItemsPerPage,
-            offset: offset,
-            includeRelated: includeProducts
+            offset: offset
         );
 
         if (categories is null)
@@ -45,8 +43,7 @@ public sealed class CategoriesController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
     public async Task<ActionResult<Category>> GetCategoryById(
-        int id,
-        bool includeProducts
+        int id
     )
     {
         if (id <= 0)
@@ -55,10 +52,7 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var category = await _categoryRepository.GetAsync(
-            key: id,
-            includeRelated: includeProducts
-        );
+        var category = await _categoryRepository.GetAsync(key: id);
 
         if (category is null)
         {

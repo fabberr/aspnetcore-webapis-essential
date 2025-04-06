@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
 
@@ -30,15 +29,12 @@ public interface IQueryableRepository<TEntity, TKey>
     /// <param name="offset">
     /// Number of entries to skip.
     /// </param>
-    /// <param name="includeRelated">
-    /// Whether to include related entities in the query or not.
-    /// </param>
     /// <returns>
     /// An enumerable collection containing entities of type
     /// <typeparamref name="TEntity"/>, or <see langword="null"/> if no entities
     /// were found.
     /// </returns>
-    Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10u, uint offset = 0u, bool includeRelated = false);
+    Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10u, uint offset = 0u);
 
     /// <summary>
     /// Queries for a specific entity of type <typeparamref name="TEntity"/>,
@@ -47,11 +43,8 @@ public interface IQueryableRepository<TEntity, TKey>
     /// <param name="key">
     /// The entity's key.
     /// </param>
-    /// <param name="includeRelated">
-    /// Whether to include related entities in the query or not.
-    /// </param>
     /// <returns>
     /// The entity of type <typeparamref name="TEntity"/> 
     /// </returns>
-    Task<TEntity?> GetAsync(TKey key, bool includeRelated = false);
+    Task<TEntity?> GetAsync(TKey key);
 }

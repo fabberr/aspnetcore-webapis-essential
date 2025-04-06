@@ -35,10 +35,25 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
     protected readonly CatalogDbContext _catalogDbContext = catalogDbContext;
     #endregion
 
-    #region IRepository<TEntity, TKey> (abstract)
-    public abstract Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10, uint offset = 0, bool includeRelated = false);
+    #region Properties
+    /// <summary>
+    /// Gets a <see cref="DbSet{TEntity}"/> for querying entities of type
+    /// <typeparamref name="TEntity"/>.
+    /// </summary>
+    protected abstract DbSet<TEntity> EntityDbSet { get; }
+    #endregion
 
-    public abstract Task<TEntity?> GetAsync(TKey key, bool includeRelated = false);
+    #region IRepository<TEntity, TKey> (abstract)
+    public async Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10, uint offset = 0)
+    {
+        return await EntityDbSet.AsNoTracking()
+            .OrderBy(c => c.Id)
+            .Skip((int)offset)
+            .Take((int)limit)
+            .ToArrayAsync();
+    }
+
+    public async Task<TEntity?> GetAsync(TKey key) => await EntityDbSet.FindAsync(key);
 
     public async Task<TEntity> CreateAsync(TEntity entity)
     {

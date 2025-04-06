@@ -25,44 +25,11 @@ public sealed class CategoryEntityFrameworkCoreRepository(CatalogDbContext catal
     :  EntityFrameworkCoreRepositoryBase<Category, int>(catalogDbContext)
     , ICategoryRepository
 {
-    #region EntityFrameworkCoreRepositoryBase<Category, int> (implementation)
-    public override async Task<IEnumerable<Category>?> GetAsync(uint limit = 10, uint offset = 0, bool includeRelated = false)
-    {
-        var query = _catalogDbContext.Categories
-            .AsNoTracking()
-            .OrderBy(c => c.Id)
-            .Skip((int)offset)
-            .Take((int)limit);
+    protected override DbSet<Category> EntityDbSet => _catalogDbContext.Categories;
 
-        if (includeRelated)
-        {
-            query = query.Include(c => c.Products);
-        }
-
-        return await query.ToArrayAsync();
-    }
-
-    public override Task<Category?> GetAsync(int key, bool includeRelated = false)
-    {
-        if (includeRelated is true)
-        {
-            return _catalogDbContext.Categories
-                .AsNoTracking()
-                .Include(c => c.Products)
-                .FirstOrDefaultAsync(c => c.Id == key);
-        }
-
-        return _catalogDbContext.Categories
-            .FindAsync(key)
-            .AsTask();
-    }
-    #endregion
-
-    #region ICategoryRepository
     public async Task<IEnumerable<Product>?> GetProducts(int key, uint limit = 10u, uint offset = 0u)
     {
-        return await _catalogDbContext.Categories
-            .AsNoTracking()
+        return await _catalogDbContext.Categories.AsNoTracking()
             .Where(c => c.Id == key)
             .Join(
                 _catalogDbContext.Products.AsNoTracking(),
@@ -74,5 +41,4 @@ public sealed class CategoryEntityFrameworkCoreRepository(CatalogDbContext catal
             .Take((int)limit)
             .ToArrayAsync();
     }
-    #endregion
 }

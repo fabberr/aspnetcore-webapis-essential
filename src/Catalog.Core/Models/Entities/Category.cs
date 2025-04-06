@@ -29,6 +29,6 @@ public sealed class Category : EntityBase
     /// <summary>
     /// A collection of products belonging to this category.
     /// </summary>
-    public ICollection<Product>? Products { get; set; } = [];
+    public ICollection<Product>? Products { get; set; } = null;
     #endregion
 }
