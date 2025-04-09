@@ -33,7 +33,7 @@ public sealed class ProductsController(
             offset: offset
         );
 
-        if (products is null)
+        if (products.Any() is false)
         {
             return NotFound();
         }

@@ -31,20 +31,20 @@ public interface IQueryableRepository<TEntity, TKey>
     /// </param>
     /// <returns>
     /// An enumerable collection containing entities of type
-    /// <typeparamref name="TEntity"/>, or <see langword="null"/> if no entities
-    /// were found.
+    /// <typeparamref name="TEntity"/>.
     /// </returns>
-    Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10u, uint offset = 0u);
+    Task<IEnumerable<TEntity>> GetAsync(uint limit = 10u, uint offset = 0u);
 
     /// <summary>
     /// Queries for a specific entity of type <typeparamref name="TEntity"/>,
     /// given its key.
     /// </summary>
     /// <param name="key">
-    /// The entity's key.
+    /// Key that uniquely identifies the entity.
     /// </param>
     /// <returns>
-    /// The entity of type <typeparamref name="TEntity"/> 
+    /// The entity identified by <paramref name="key"/>, or <see langword="null"/>
+    /// if no entity was found.
     /// </returns>
     Task<TEntity?> GetAsync(TKey key);
 }

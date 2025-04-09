@@ -27,7 +27,7 @@ public sealed class CategoryEntityFrameworkCoreRepository(CatalogDbContext catal
 {
     protected override DbSet<Category> EntityDbSet => _catalogDbContext.Categories;
 
-    public async Task<IEnumerable<Product>?> GetProducts(int key, uint limit = 10u, uint offset = 0u)
+    public async Task<IEnumerable<Product>> GetProducts(int key, uint limit = 10u, uint offset = 0u)
     {
         return await _catalogDbContext.Categories.AsNoTracking()
             .Where(c => c.Id == key)

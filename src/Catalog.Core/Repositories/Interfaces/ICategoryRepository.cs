@@ -22,7 +22,7 @@ public interface ICategoryRepository : IRepository<Category, int>
     /// </param>
     /// <returns>
     /// An enumerable collection containing Products belonging to the specified
-    /// Category, or <see langword="null"/> if no Products were found.
+    /// Category.
     /// </returns>
-    Task<IEnumerable<Product>?> GetProducts(int key, uint limit = 10u, uint offset = 0u);
+    Task<IEnumerable<Product>> GetProducts(int key, uint limit = 10u, uint offset = 0u);
 }

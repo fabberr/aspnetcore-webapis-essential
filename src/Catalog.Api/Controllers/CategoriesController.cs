@@ -33,7 +33,7 @@ public sealed class CategoriesController(
             offset: offset
         );
 
-        if (categories is null)
+        if (categories.Any() is false)
         {
             return NotFound();
         }
@@ -82,7 +82,7 @@ public sealed class CategoriesController(
             offset: offset
         );
 
-        if (products is null)
+        if (products.Any() is false)
         {
             return NotFound();
         }
@@ -189,4 +189,3 @@ public sealed class CategoriesController(
 }
 
 // @todo: (when DTOs are implemented) make all properties except `id` optional for PUT routes
-// @todo: move common functionality to base controller

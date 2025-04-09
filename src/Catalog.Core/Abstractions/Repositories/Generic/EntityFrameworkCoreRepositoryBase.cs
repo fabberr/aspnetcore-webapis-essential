@@ -44,7 +44,7 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
     #endregion
 
     #region IRepository<TEntity, TKey>
-    public async Task<IEnumerable<TEntity>?> GetAsync(uint limit = 10, uint offset = 0)
+    public async Task<IEnumerable<TEntity>> GetAsync(uint limit = 10, uint offset = 0)
     {
         return await EntityDbSet.AsNoTracking()
             .Where(entity => !entity.Hidden)
