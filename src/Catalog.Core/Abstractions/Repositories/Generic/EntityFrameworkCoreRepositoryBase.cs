@@ -76,7 +76,7 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
 
     public async Task<TEntity> UpdateAsync(TEntity entity)
     {
-        _catalogDbContext.Entry(entity).State = EntityState.Modified;
+        EntityDbSet.Update(entity);
 
         await _catalogDbContext.SaveChangesAsync();
 
