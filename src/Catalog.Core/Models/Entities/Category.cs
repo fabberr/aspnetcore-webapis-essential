@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Catalog.Core.Models.Entities;
 
@@ -29,6 +30,7 @@ public sealed class Category : EntityBase
     /// <summary>
     /// A collection of products belonging to this category.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Product>? Products { get; set; } = null;
     #endregion
 }
