@@ -44,10 +44,10 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity>(CatalogDbContex
 
     #region IRepository<TEntity>
     public IQueryable<TEntity> Query() => DbSet.AsNoTracking()
-        .Where(entity => false == entity.Hidden);
+        .Where(entity => !entity.Hidden);
 
     public async Task<IEnumerable<TEntity>> GetAsync(uint limit = 10, uint offset = 0) => await DbSet.AsNoTracking()
-        .Where(entity => false == entity.Hidden)
+        .Where(entity => !entity.Hidden)
         .OrderBy(entity => entity.Id)
         .Skip((int)offset)
         .Take((int)limit)

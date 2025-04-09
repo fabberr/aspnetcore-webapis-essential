@@ -30,13 +30,17 @@ public sealed class EntityFrameworkCoreCategoryRepository(CatalogDbContext catal
     public async Task<IEnumerable<Product>> GetProducts(int key, uint limit = 10u, uint offset = 0u)
     {
         return await _catalogDbContext.Categories.AsNoTracking()
-            .Where(c => c.Id == key)
             .Join(
-                inner: _catalogDbContext.Products.AsNoTracking(),
-                outerKeySelector: category => category.Id,
-                innerKeySelector: product => product.CategoryId,
-                resultSelector: (_, product) => product
+                _catalogDbContext.Products.AsNoTracking(),
+                (category) => category.Id, (product) => product.CategoryId,
+                (category, product) => new { category, product }
             )
+            .Where((categoryProduct) => (
+                categoryProduct.category.Id == key
+                && !categoryProduct.category.Hidden
+                && !categoryProduct.product.Hidden
+            ))
+            .Select(categoryProduct => categoryProduct.product)
             .OrderBy(p => p.Id)
             .Skip((int)offset)
             .Take((int)limit)
