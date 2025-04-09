@@ -4,4 +4,4 @@ using Catalog.Core.Models.Entities;
 namespace Catalog.Core.Repositories.Interfaces;
 
 /// <inheritdoc/>
-public interface IProductRepository : IRepository<Product, int>;
+public interface IProductRepository : IRepository<Product>;

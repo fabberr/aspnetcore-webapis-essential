@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Catalog.Core.Repositories;
 
 /// <summary>
-/// Implements <see cref="EntityFrameworkCoreRepositoryBase{TEntity, TKey}"/>
+/// Implements <see cref="EntityFrameworkCoreRepositoryBase{TEntity}"/>
 /// for the <see cref="Product"/> entity.
 /// </summary>
 /// <remarks>
@@ -19,8 +19,8 @@ namespace Catalog.Core.Repositories;
 /// "Catalog" Database.
 /// </param>
 public sealed class ProductEntityFrameworkCoreRepository(CatalogDbContext catalogDbContext)
-    :  EntityFrameworkCoreRepositoryBase<Product, int>(catalogDbContext)
+    :  EntityFrameworkCoreRepositoryBase<Product>(catalogDbContext)
     , IProductRepository
 {
-    protected override DbSet<Product> EntityDbSet => _catalogDbContext.Products;
+    protected override DbSet<Product> DbSet => _catalogDbContext.Products;
 }

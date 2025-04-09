@@ -33,11 +33,6 @@ public sealed class ProductsController(
             offset: offset
         );
 
-        if (products.Any() is false)
-        {
-            return NotFound();
-        }
-
         return products.ToArray();
     }
 
@@ -148,26 +143,17 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var currentProduct = await _productRepository.GetAsync(key: id);
-        if (currentProduct is null)
+        var deletedProduct = await _productRepository.DeleteAsync(
+            key: id,
+            strategy: options.Value.DeleteStrategy
+        );
+
+        if (deletedProduct is null)
         {
             return NotFound();
         }
 
-        if (options.Value.DeleteBehavior is ApiDeleteBehavior.Logical)
-        {
-            currentProduct.Hidden = true;
-        }
-
-        var deletedCategory = await (options.Value.DeleteBehavior switch {
-            ApiDeleteBehavior.Physical
-                => _productRepository.DeleteAsync(entity: currentProduct),
-            ApiDeleteBehavior.Logical
-                => _productRepository.UpdateAsync(entity: currentProduct),
-            _ => throw new System.InvalidOperationException(),
-        });
-
-        return deletedCategory;
+        return deletedProduct;
     }
     #endregion
 }

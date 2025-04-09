@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
 
 namespace Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
@@ -10,12 +11,8 @@ namespace Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
 /// <typeparam name="TEntity">
 /// Type of the entity.
 /// </typeparam>
-/// <typeparam name="TKey">
-/// Type of the key used to identify the entity.
-/// </typeparam>
-public interface IModifiableRepository<TEntity, TKey>
+public interface IModifiableRepository<TEntity>
     where TEntity : EntityBase
-    where TKey : notnull
 {
     /// <summary>
     /// Creates a new entity of type <typeparamref name="TEntity"/>.
@@ -40,13 +37,18 @@ public interface IModifiableRepository<TEntity, TKey>
     Task<TEntity> UpdateAsync(TEntity entity);
 
     /// <summary>
-    /// Deletes an existing entity of type <typeparamref name="TEntity"/>.
+    /// Deletes an existing entity of type <typeparamref name="TEntity"/> by its
+    /// key.
     /// </summary>
-    /// <param name="entity">
-    /// The entity to delete.
+    /// <param name="key">
+    /// Key that identifies a specific entity.
+    /// </param>
+    /// <param name="strategy">
+    /// The strategy to apply when deleting the entity.
     /// </param>
     /// <returns>
-    /// The deleted entity.
+    /// The deleted entity, or <see langword="null"/> if no entity with the
+    /// given <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity> DeleteAsync(TEntity entity);
+    Task<TEntity?> DeleteAsync(int key, DeleteStrategy strategy = DeleteStrategy.Delete);
 }

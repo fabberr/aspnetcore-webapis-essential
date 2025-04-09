@@ -9,13 +9,5 @@ namespace Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
 /// <typeparam name="TEntity">
 /// Type of the entity.
 /// </typeparam>
-/// <typeparam name="TKey">
-/// Type of the key used to identify the entity.
-/// </typeparam>
-public interface IRepository<TEntity, TKey>
-    : IQueryableRepository<TEntity, TKey>
-    , IModifiableRepository<TEntity, TKey>
-
-    where TEntity : EntityBase
-    where TKey : notnull
-;
+public interface IRepository<TEntity> : IQueryableRepository<TEntity>, IModifiableRepository<TEntity>
+    where TEntity : EntityBase;

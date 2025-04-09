@@ -35,7 +35,7 @@ public sealed class CategoriesController(
 
         if (categories.Any() is false)
         {
-            return NotFound();
+            return NoContent();
         }
 
         return categories.ToArray();
@@ -77,15 +77,10 @@ public sealed class CategoriesController(
         }
 
         var products = await _categoryRepository.GetProducts(
-            key: id,
+            categoryKey: id,
             limit: limit ?? options.Value.DefaultItemsPerPage,
             offset: offset
         );
-
-        if (products.Any() is false)
-        {
-            return NotFound();
-        }
 
         return products.ToArray();
     }
@@ -164,24 +159,15 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var currentCategory = await _categoryRepository.GetAsync(key: id);
-        if (currentCategory is null)
+        var deletedCategory = await _categoryRepository.DeleteAsync(
+            key: id,
+            strategy: options.Value.DeleteStrategy
+        );
+
+        if (deletedCategory is null)
         {
             return NotFound();
         }
-
-        if (options.Value.DeleteBehavior is ApiDeleteBehavior.Logical)
-        {
-            currentCategory.Hidden = true;
-        }
-
-        var deletedCategory = await (options.Value.DeleteBehavior switch {
-            ApiDeleteBehavior.Physical
-                => _categoryRepository.DeleteAsync(entity: currentCategory),
-            ApiDeleteBehavior.Logical
-                => _categoryRepository.UpdateAsync(entity: currentCategory),
-            _ => throw new System.InvalidOperationException(),
-        });
 
         return deletedCategory;
     }
@@ -189,3 +175,4 @@ public sealed class CategoriesController(
 }
 
 // @todo: (when DTOs are implemented) make all properties except `id` optional for PUT routes
+// @todo: Paginated response DTOs for Get actions

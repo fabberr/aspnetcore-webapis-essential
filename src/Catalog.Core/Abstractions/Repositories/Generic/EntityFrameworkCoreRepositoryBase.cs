@@ -1,35 +1,34 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
 using Catalog.Core.Context;
+using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Catalog.Core.Abstractions.Repositories.Generic;
 
 /// <summary>
-/// Implements the <see cref="IRepository{TEntity, TKey}"/> interface for Entity
+/// Implements the <see cref="IRepository{TEntity}"/> interface for Entity
 /// Framework Core.
 /// </summary>
 /// <typeparam name="TEntity">
 /// Type of the entity.
 /// </typeparam>
-/// <typeparam name="TKey">
-/// Type of the key used to identify the entity.
-/// </typeparam>
 /// <remarks>
 /// Initializes a new instance of the
-/// <see cref="EntityFrameworkCoreRepositoryBase{TEntity, TKey}"/> class.
+/// <see cref="EntityFrameworkCoreRepositoryBase{TEntity}"/> class.
 /// </remarks>
 /// <param name="catalogDbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance connected to the
 /// "Catalog" Database.
 /// </param>
-public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDbContext catalogDbContext)
-    : IRepository<TEntity, TKey>
+public abstract class EntityFrameworkCoreRepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
+    : IRepository<TEntity>
     where TEntity : EntityBase
-    where TKey : notnull
 {
     #region Dependencies
     protected readonly CatalogDbContext _catalogDbContext = catalogDbContext;
@@ -37,26 +36,27 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
 
     #region Properties
     /// <summary>
-    /// Gets a <see cref="DbSet{TEntity}"/> for querying entities of type
-    /// <typeparamref name="TEntity"/>.
+    /// Gets a <see cref="DbSet{TEntity}"/> for querying and modifying entities
+    /// of type <typeparamref name="TEntity"/>.
     /// </summary>
-    protected abstract DbSet<TEntity> EntityDbSet { get; }
+    protected abstract DbSet<TEntity> DbSet { get; }
     #endregion
 
-    #region IRepository<TEntity, TKey>
-    public async Task<IEnumerable<TEntity>> GetAsync(uint limit = 10, uint offset = 0)
-    {
-        return await EntityDbSet.AsNoTracking()
-            .Where(entity => !entity.Hidden)
-            .OrderBy(entity => entity.Id)
-            .Skip((int)offset)
-            .Take((int)limit)
-            .ToArrayAsync();
-    }
+    #region IRepository<TEntity>
+    public IQueryable<TEntity> Query() => DbSet.AsNoTracking()
+        .Where(entity => false == entity.Hidden);
 
-    public async Task<TEntity?> GetAsync(TKey key)
+    public async Task<IEnumerable<TEntity>> GetAsync(uint limit = 10, uint offset = 0) => await DbSet.AsNoTracking()
+        .Where(entity => false == entity.Hidden)
+        .OrderBy(entity => entity.Id)
+        .Skip((int)offset)
+        .Take((int)limit)
+        .ToArrayAsync();
+
+    public async Task<TEntity?> GetAsync(int key)
     {
-        var entity = await EntityDbSet.FindAsync(key);
+        var entity = await DbSet.FindAsync(key);
+
         if (entity is { Hidden: true })
         {
             return null;
@@ -67,29 +67,50 @@ public abstract class EntityFrameworkCoreRepositoryBase<TEntity, TKey>(CatalogDb
 
     public async Task<TEntity> CreateAsync(TEntity entity)
     {
-        var createdEntry = await _catalogDbContext.AddAsync(entity);
+        var createdEntityEntry = DbSet.Add(entity);
 
         await _catalogDbContext.SaveChangesAsync();
 
-        return createdEntry.Entity;
+        return createdEntityEntry.Entity;
     }
 
     public async Task<TEntity> UpdateAsync(TEntity entity)
     {
-        EntityDbSet.Update(entity);
+        var updatedEntityEntry = DbSet.Update(entity);
 
         await _catalogDbContext.SaveChangesAsync();
 
-        return entity;
+        return updatedEntityEntry.Entity;
     }
 
-    public async Task<TEntity> DeleteAsync(TEntity entity)
+    public async Task<TEntity?> DeleteAsync(int key, DeleteStrategy strategy = DeleteStrategy.Delete)
     {
-        _catalogDbContext.Remove(entity);
+        var entity = await DbSet.FindAsync(key);
+
+        if (entity is null)
+        {
+            return null;
+        }
+
+        var deletedEntityEntry = strategy switch {
+
+            DeleteStrategy.Delete => DbSet.Remove(entity),
+
+            DeleteStrategy.Hide => _setAsHiddenAndUpdateEntity(entity),
+
+            _ => throw new NotSupportedException(),
+        };
 
         await _catalogDbContext.SaveChangesAsync();
 
-        return entity;
+        return deletedEntityEntry.Entity;
+
+        #region Local Funcions
+        EntityEntry<TEntity> _setAsHiddenAndUpdateEntity(TEntity entity) {
+            entity.Hidden = true;
+            return DbSet.Update(entity);
+        }
+        #endregion
     }
     #endregion
 }

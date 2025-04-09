@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Catalog.Core.Repositories;
 
 /// <summary>
-/// Implements <see cref="EntityFrameworkCoreRepositoryBase{TEntity, TKey}"/>
+/// Implements <see cref="EntityFrameworkCoreRepositoryBase{TEntity}"/>
 /// for the <see cref="Category"/> entity.
 /// </summary>
 /// <remarks>
@@ -22,19 +22,20 @@ namespace Catalog.Core.Repositories;
 /// "Catalog" Database.
 /// </param>
 public sealed class CategoryEntityFrameworkCoreRepository(CatalogDbContext catalogDbContext)
-    :  EntityFrameworkCoreRepositoryBase<Category, int>(catalogDbContext)
+    :  EntityFrameworkCoreRepositoryBase<Category>(catalogDbContext)
     , ICategoryRepository
 {
-    protected override DbSet<Category> EntityDbSet => _catalogDbContext.Categories;
+    protected override DbSet<Category> DbSet => _catalogDbContext.Categories;
 
     public async Task<IEnumerable<Product>> GetProducts(int key, uint limit = 10u, uint offset = 0u)
     {
         return await _catalogDbContext.Categories.AsNoTracking()
             .Where(c => c.Id == key)
             .Join(
-                _catalogDbContext.Products.AsNoTracking(),
-                category => category.Id, product => product.CategoryId,
-                (_, product) => product
+                inner: _catalogDbContext.Products.AsNoTracking(),
+                outerKeySelector: category => category.Id,
+                innerKeySelector: product => product.CategoryId,
+                resultSelector: (_, product) => product
             )
             .OrderBy(p => p.Id)
             .Skip((int)offset)
