@@ -12,13 +12,13 @@ namespace Catalog.Core.Repositories;
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the
-/// <see cref="ProductEntityFrameworkCoreRepository"/> class.
+/// <see cref="EntityFrameworkCoreProductRepository"/> class.
 /// </remarks>
 /// <param name="catalogDbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance connected to the
 /// "Catalog" Database.
 /// </param>
-public sealed class ProductEntityFrameworkCoreRepository(CatalogDbContext catalogDbContext)
+public sealed class EntityFrameworkCoreProductRepository(CatalogDbContext catalogDbContext)
     :  EntityFrameworkCoreRepositoryBase<Product>(catalogDbContext)
     , IProductRepository
 {
