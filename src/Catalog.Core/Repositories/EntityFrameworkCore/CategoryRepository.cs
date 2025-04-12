@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -16,24 +15,21 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// <remarks>
 /// Initializes a new instance of the <see cref="CategoryRepository"/> class.
 /// </remarks>
-/// <param name="catalogDbContext">
-/// An Entity Framework Core <see cref="DbContext"/> instance connected to the
-/// "Catalog" Database.
+/// <param name="dbContext">
+/// An Entity Framework Core <see cref="DbContext"/> instance.
 /// </param>
-public sealed class CategoryRepository(CatalogDbContext catalogDbContext)
-    : RepositoryBase<Category>(catalogDbContext)
+public sealed class CategoryRepository(DbContext dbContext)
+    : RepositoryBase<Category>(dbContext)
     , ICategoryRepository
 {
-    protected override DbSet<Category> EntityDbSet => _catalogDbContext.Categories;
-
     public async Task<IEnumerable<Product>> GetProducts(
         int key,
         uint limit = 10u,
         uint offset = 0u,
         CancellationToken cancellationToken = default
-    ) => await _catalogDbContext.Categories.AsNoTracking()
+    ) => await _dbSet.AsNoTracking()
         .Join(
-            _catalogDbContext.Products.AsNoTracking(),
+            _dbContext.Set<Product>().AsNoTracking(),
             category => category.Id, product => product.CategoryId,
             (category, product) => new { Category = category, Product = product }
         )

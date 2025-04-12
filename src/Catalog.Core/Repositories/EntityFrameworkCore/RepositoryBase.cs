@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Catalog.Core.Context;
 using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Repositories.Abstractions.Generic;
@@ -23,30 +22,25 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// Initializes a new instance of the <see cref="RepositoryBase{TEntity}"/>
 /// class.
 /// </remarks>
-/// <param name="catalogDbContext">
-/// An Entity Framework Core <see cref="DbContext"/> instance connected to the
-/// "Catalog" Database.
+/// <param name="dbContext">
+/// An Entity Framework Core <see cref="DbContext"/> instance.
 /// </param>
-public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
+public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     : IRepository<TEntity>
     where TEntity : EntityBase
 {
     #region Dependencies
-    protected readonly CatalogDbContext _catalogDbContext = catalogDbContext;
+    protected readonly DbContext _dbContext = dbContext;
     #endregion
 
-    #region Properties
-    /// <summary>
-    /// Gets a <see cref="DbSet{TEntity}"/> for querying and modifying entities
-    /// of type <typeparamref name="TEntity"/>.
-    /// </summary>
-    protected abstract DbSet<TEntity> EntityDbSet { get; }
+    #region Fields
+    protected readonly DbSet<TEntity> _dbSet = dbContext.Set<TEntity>();
     #endregion
 
     #region IRepository<TEntity>
     public IQueryable<TEntity> Query()
     {
-        return EntityDbSet.AsNoTracking()
+        return _dbSet.AsNoTracking()
             .Where(entity => !entity.Hidden);
     }
 
@@ -56,7 +50,7 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
         CancellationToken cancellationToken = default
     )
     {
-        return await EntityDbSet.AsNoTracking()
+        return await _dbSet.AsNoTracking()
             .Where(entity => !entity.Hidden)
             .OrderBy(entity => entity.Id)
             .Skip((int)offset)
@@ -69,7 +63,7 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var entity = await EntityDbSet.FindAsync([key], cancellationToken);
+        var entity = await _dbSet.FindAsync([key], cancellationToken);
 
         if (entity is { Hidden: true })
         {
@@ -86,9 +80,9 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        var createdEntityEntry = await EntityDbSet.AddAsync(entity, cancellationToken);
+        var createdEntityEntry = await _dbSet.AddAsync(entity, cancellationToken);
 
-        await _catalogDbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return createdEntityEntry.Entity;
     }
@@ -100,9 +94,9 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        var updatedEntityEntry = EntityDbSet.Update(entity);
+        var updatedEntityEntry = _dbSet.Update(entity);
 
-        await _catalogDbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return updatedEntityEntry.Entity;
     }
@@ -113,7 +107,7 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var entity = await EntityDbSet.FindAsync([key], cancellationToken);
+        var entity = await _dbSet.FindAsync([key], cancellationToken);
 
         if (entity is null)
         {
@@ -122,21 +116,21 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
 
         var deletedEntityEntry = strategy switch {
 
-            DeleteStrategy.Delete => EntityDbSet.Remove(entity),
+            DeleteStrategy.Delete => _dbSet.Remove(entity),
 
             DeleteStrategy.Hide => _setAsHiddenAndUpdateEntity(entity),
 
             _ => throw new NotSupportedException(),
         };
 
-        await _catalogDbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return deletedEntityEntry.Entity;
 
         #region Local Funcions
         EntityEntry<TEntity> _setAsHiddenAndUpdateEntity(TEntity entity) {
             entity.Hidden = true;
-            return EntityDbSet.Update(entity);
+            return _dbSet.Update(entity);
         }
         #endregion
     }

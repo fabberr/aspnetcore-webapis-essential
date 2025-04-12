@@ -1,4 +1,3 @@
-using Catalog.Core.Context;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -12,13 +11,7 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// <remarks>
 /// Initializes a new instance of the <see cref="ProductRepository"/> class.
 /// </remarks>
-/// <param name="catalogDbContext">
-/// An Entity Framework Core <see cref="DbContext"/> instance connected to the
-/// "Catalog" Database.
+/// <param name="dbContext">
+/// An Entity Framework Core <see cref="DbContext"/> instance.
 /// </param>
-public sealed class ProductRepository(CatalogDbContext catalogDbContext)
-    :  RepositoryBase<Product>(catalogDbContext)
-    , IProductRepository
-{
-    protected override DbSet<Product> EntityDbSet => _catalogDbContext.Products;
-}
+public sealed class ProductRepository(DbContext dbContext) : RepositoryBase<Product>(dbContext), IProductRepository;
