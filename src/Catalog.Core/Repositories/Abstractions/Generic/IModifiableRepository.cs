@@ -66,7 +66,7 @@ public interface IModifiableRepository<TEntity>
     /// The deleted entity, or <see langword="null"/> if no entity with the
     /// given <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity?> DeleteAsync(
+    Task<TEntity?> DeleteByIdAsync(
         int key,
         DeleteStrategy strategy = DeleteStrategy.Delete,
         CancellationToken cancellationToken = default

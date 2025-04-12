@@ -127,7 +127,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         return updatedEntityEntry.Entity;
     }
 
-    public async Task<TEntity?> DeleteAsync(
+    public async Task<TEntity?> DeleteByIdAsync(
         int key,
         DeleteStrategy strategy = DeleteStrategy.Delete,
         CancellationToken cancellationToken = default

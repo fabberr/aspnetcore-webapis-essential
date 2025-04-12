@@ -178,7 +178,7 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var deletedCategory = await _categoryRepository.DeleteAsync(
+        var deletedCategory = await _categoryRepository.DeleteByIdAsync(
             key: id,
             strategy: options.Value.DeleteStrategy,
             cancellationToken: cancellationToken

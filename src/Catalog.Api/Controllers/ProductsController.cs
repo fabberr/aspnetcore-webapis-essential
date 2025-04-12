@@ -160,7 +160,7 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var deletedProduct = await _productRepository.DeleteAsync(
+        var deletedProduct = await _productRepository.DeleteByIdAsync(
             key: id,
             strategy: options.Value.DeleteStrategy,
             cancellationToken: cancellationToken
