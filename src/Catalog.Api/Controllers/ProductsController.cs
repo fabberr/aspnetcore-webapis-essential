@@ -25,8 +25,8 @@ public sealed class ProductsController(
     [HttpGet(Name = nameof(GetProducts))]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        uint? limit = null,
-        uint offset = 0u,
+        [FromQuery] uint? limit = null,
+        [FromQuery] uint offset = 0u,
         CancellationToken cancellationToken = default
     )
     {
@@ -41,7 +41,7 @@ public sealed class ProductsController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
     public async Task<ActionResult<Product>> GetProductById(
-        int id,
+        [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
     {
@@ -68,7 +68,7 @@ public sealed class ProductsController(
     #region POST
     [HttpPost(Name = nameof(CreateProduct))]
     public async Task<ActionResult<Product>> CreateProduct(
-        Product product,
+        [FromBody] Product product,
         CancellationToken cancellationToken = default
     )
     {
@@ -88,8 +88,8 @@ public sealed class ProductsController(
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateProduct))]
     public async Task<ActionResult<Product>> UpdateProduct(
-        int id,
-        Product product,
+        [FromRoute] int id,
+        [FromBody] Product product,
         CancellationToken cancellationToken = default
     )
     {
@@ -150,7 +150,7 @@ public sealed class ProductsController(
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
     public async Task<ActionResult<Product>> DeleteProduct(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        int id,
+        [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
     {

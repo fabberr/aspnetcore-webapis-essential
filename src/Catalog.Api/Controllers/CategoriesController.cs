@@ -25,8 +25,8 @@ public sealed class CategoriesController(
     [HttpGet(Name = nameof(GetCategories))]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        uint? limit = null,
-        uint offset = 0u,
+        [FromQuery] uint? limit = null,
+        [FromQuery] uint offset = 0u,
         CancellationToken cancellationToken = default
     )
     {
@@ -46,7 +46,7 @@ public sealed class CategoriesController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
     public async Task<ActionResult<Category>> GetCategoryById(
-        int id,
+        [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
     {
@@ -72,9 +72,9 @@ public sealed class CategoriesController(
     [HttpGet(template: "{id:int}/products", Name = nameof(GetCategoryProducts))]
     public async Task<ActionResult<IEnumerable<Product>>> GetCategoryProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        int id,
-        uint? limit = null,
-        uint offset = 0u,
+        [FromRoute] int id,
+        [FromQuery] uint? limit = null,
+        [FromQuery] uint offset = 0u,
         CancellationToken cancellationToken = default
     )
     {
@@ -98,7 +98,7 @@ public sealed class CategoriesController(
     #region POST
     [HttpPost(Name = nameof(CreateCategory))]
     public async Task<ActionResult<Category>> CreateCategory(
-        Category category,
+        [FromBody] Category category,
         CancellationToken cancellationToken = default
     )
     {
@@ -118,8 +118,8 @@ public sealed class CategoriesController(
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryAsync))]
     public async Task<ActionResult<Category>> UpdateCategoryAsync(
-        int id,
-        Category category,
+        [FromRoute] int id,
+        [FromBody] Category category,
         CancellationToken cancellationToken = default
     )
     {
@@ -168,7 +168,7 @@ public sealed class CategoriesController(
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
     public async Task<ActionResult<Category>> DeleteCategory(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        int id,
+        [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
     {
