@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Repositories.Abstractions.Generic;
 
-namespace Catalog.Core.Repositories.Interfaces;
+namespace Catalog.Core.Repositories.Abstractions;
 
 /// <inheritdoc/>
 public interface ICategoryRepository : IRepository<Category>

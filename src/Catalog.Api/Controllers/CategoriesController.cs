@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Settings;
-using Catalog.Core.Repositories.Interfaces;
+using Catalog.Core.Repositories.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 

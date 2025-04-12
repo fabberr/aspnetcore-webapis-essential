@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
 using Catalog.Core.Context;
 using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Repositories.Abstractions.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Catalog.Core.Abstractions.Repositories.Generic;
+namespace Catalog.Core.Repositories.EntityFrameworkCore;
 
 /// <summary>
 /// Implements the <see cref="IRepository{TEntity}"/> interface for Entity
@@ -20,13 +20,13 @@ namespace Catalog.Core.Abstractions.Repositories.Generic;
 /// </typeparam>
 /// <remarks>
 /// Initializes a new instance of the
-/// <see cref="EntityFrameworkCoreRepositoryBase{TEntity}"/> class.
+/// <see cref="RepositoryBase{TEntity}"/> class.
 /// </remarks>
 /// <param name="catalogDbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance connected to the
 /// "Catalog" Database.
 /// </param>
-public abstract class EntityFrameworkCoreRepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
+public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
     : IRepository<TEntity>
     where TEntity : EntityBase
 {

@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Core.Abstractions.Repositories.Generic.Interfaces;
+namespace Catalog.Core.Repositories.Abstractions.Generic;
 
 /// <summary>
 /// A repository capable of modifying data from entities of type

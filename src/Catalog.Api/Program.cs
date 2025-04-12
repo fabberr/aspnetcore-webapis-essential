@@ -8,8 +8,8 @@ using Catalog.Core.Attributes;
 using Catalog.Core.Context;
 using Catalog.Core.Extensions;
 using Catalog.Core.Models.Settings;
-using Catalog.Core.Repositories;
-using Catalog.Core.Repositories.Interfaces;
+using Catalog.Core.Repositories.Abstractions;
+using Catalog.Core.Repositories.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -56,8 +56,8 @@ builder.Services
     );
 
 builder.Services
-    .AddScoped<ICategoryRepository, EntityFrameworkCoreCategoryRepository>()
-    .AddScoped<IProductRepository, EntityFrameworkCoreProductRepository>();
+    .AddScoped<ICategoryRepository, CategoryRepository>()
+    .AddScoped<IProductRepository, ProductRepository>();
 
 builder.Services
     .AddControllers()
