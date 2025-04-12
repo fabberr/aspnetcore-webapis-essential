@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,7 +49,7 @@ foreach (var type in configurationSectionTypes)
 
 #region Services
 builder.Services
-    .AddDbContext<CatalogDbContext>(
+    .AddDbContext<DbContext, CatalogDbContext>(
         optionsAction: (optionsBuilder) => optionsBuilder
             .ConfigureDefaultDatabaseConnection(appSettings),
         contextLifetime: ServiceLifetime.Scoped,
