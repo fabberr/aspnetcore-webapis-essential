@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
@@ -53,6 +55,39 @@ public interface IQueryableRepository<TEntity>
     /// <typeparamref name="TEntity"/>.
     /// </returns>
     Task<IEnumerable<TEntity>> GetAsync(
+        uint limit = 10u,
+        uint offset = 0u,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Queries for entities of type <typeparamref name="TEntity"/> that meet
+    /// the criteria defined in <paramref name="predicate"/>, sorted by
+    /// <see cref="EntityBase.Id"/> in ascending order.
+    /// </summary>
+    /// <remarks>
+    /// Note: Entities marked as hidden (<see cref="EntityBase.Hidden"/> is set
+    /// to <see langword="true"/>) will <b>not</b> be fetched from the data
+    /// source when using this method.
+    /// </remarks>
+    /// <param name="predicate">
+    /// Repesents the search criteria as a predicate expression.
+    /// </param>
+    /// <param name="limit">
+    /// Delimits the number of entries which will be fetched at most.
+    /// </param>
+    /// <param name="offset">
+    /// Number of entries to skip.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
+    /// <returns>
+    /// An enumerable collection containing entities of type
+    /// <typeparamref name="TEntity"/> that meet the criteria.
+    /// </returns>
+    Task<IEnumerable<TEntity>> GetAsync(
+        Expression<Func<TEntity, bool>> predicate,
         uint limit = 10u,
         uint offset = 0u,
         CancellationToken cancellationToken = default

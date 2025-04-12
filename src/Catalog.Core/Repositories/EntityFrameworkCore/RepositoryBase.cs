@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Enums;
@@ -51,6 +52,23 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     )
     {
         return await Query()
+            .OrderBy(entity => entity.Id)
+            .Skip((int)offset)
+            .Take((int)limit)
+            .ToArrayAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<TEntity>> GetAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        uint limit = 10,
+        uint offset = 0,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        return await Query()
+            .Where(predicate)
             .OrderBy(entity => entity.Id)
             .Skip((int)offset)
             .Take((int)limit)
