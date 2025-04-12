@@ -102,9 +102,6 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        {
-            currentProduct.Hidden = product.Hidden;
-        }
         if (product.Name is not "" && product.Name != currentProduct.Name)
         {
             currentProduct.Name = product.Name;

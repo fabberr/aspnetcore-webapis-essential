@@ -130,9 +130,6 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        {
-            currentCategory.Hidden = category.Hidden;
-        }
         if (category.Name is not "" && category.Name != currentCategory.Name)
         {
             currentCategory.Name = category.Name;
