@@ -45,7 +45,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             .Where(entity => !entity.Hidden);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAsync(
+    public async Task<IEnumerable<TEntity>> QueryMultipleAsync(
         uint limit = 10,
         uint offset = 0,
         CancellationToken cancellationToken = default
@@ -58,7 +58,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             .ToArrayAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAsync(
+    public async Task<IEnumerable<TEntity>> QueryMultipleByPredicateAsync(
         Expression<Func<TEntity, bool>> predicate,
         uint limit = 10,
         uint offset = 0,
@@ -75,7 +75,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             .ToArrayAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> GetByIdAsync(
+    public async Task<TEntity?> FindByIdAsync(
         int key,
         CancellationToken cancellationToken = default
     )
@@ -90,7 +90,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         return entity;
     }
 
-    public Task<TEntity?> GetByAsync(
+    public Task<TEntity?> FindByPredicateAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default
     )
@@ -133,7 +133,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var entity = await GetByIdAsync(key, cancellationToken);
+        var entity = await FindByIdAsync(key, cancellationToken);
 
         if (entity is null)
         {

@@ -30,7 +30,7 @@ public sealed class ProductsController(
         CancellationToken cancellationToken = default
     )
     {
-        var products = await _productRepository.GetAsync(
+        var products = await _productRepository.QueryMultipleAsync(
             limit: limit ?? options.Value.DefaultItemsPerPage,
             offset: offset,
             cancellationToken: cancellationToken
@@ -51,7 +51,7 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var product = await _productRepository.GetByIdAsync(
+        var product = await _productRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -108,7 +108,7 @@ public sealed class ProductsController(
             );
         }
 
-        var currentProduct = await _productRepository.GetByIdAsync(
+        var currentProduct = await _productRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );

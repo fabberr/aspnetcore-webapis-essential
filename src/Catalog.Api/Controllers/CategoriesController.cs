@@ -30,7 +30,7 @@ public sealed class CategoriesController(
         CancellationToken cancellationToken = default
     )
     {
-        var categories = await _categoryRepository.GetAsync(
+        var categories = await _categoryRepository.QueryMultipleAsync(
             limit: limit ?? options.Value.DefaultItemsPerPage,
             offset: offset,
             cancellationToken: cancellationToken
@@ -56,7 +56,7 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var category = await _categoryRepository.GetByIdAsync(
+        var category = await _categoryRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -138,7 +138,7 @@ public sealed class CategoriesController(
             );
         }
 
-        var currentCategory = await _categoryRepository.GetByIdAsync(
+        var currentCategory = await _categoryRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );

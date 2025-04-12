@@ -53,7 +53,7 @@ public interface IQueryableRepository<TEntity>
     /// <returns>
     /// A collection containing entities of type <typeparamref name="TEntity"/>.
     /// </returns>
-    Task<IEnumerable<TEntity>> GetAsync(
+    Task<IEnumerable<TEntity>> QueryMultipleAsync(
         uint limit = 10u,
         uint offset = 0u,
         CancellationToken cancellationToken = default
@@ -85,7 +85,7 @@ public interface IQueryableRepository<TEntity>
     /// A collection containing entities of type <typeparamref name="TEntity"/>
     /// that meet the search criteria.
     /// </returns>
-    Task<IEnumerable<TEntity>> GetAsync(
+    Task<IEnumerable<TEntity>> QueryMultipleByPredicateAsync(
         Expression<Func<TEntity, bool>> predicate,
         uint limit = 10u,
         uint offset = 0u,
@@ -110,7 +110,7 @@ public interface IQueryableRepository<TEntity>
     /// The entity, or <see langword="null"/> if no entity with the given
     /// <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity?> GetByIdAsync(
+    Task<TEntity?> FindByIdAsync(
         int key,
         CancellationToken cancellationToken = default
     );
@@ -135,7 +135,7 @@ public interface IQueryableRepository<TEntity>
     /// The first entity that meets the search criteria, or
     /// <see langword="null"/> if no matches were found.
     /// </returns>
-    Task<TEntity?> GetByAsync(
+    Task<TEntity?> FindByPredicateAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default
     );
