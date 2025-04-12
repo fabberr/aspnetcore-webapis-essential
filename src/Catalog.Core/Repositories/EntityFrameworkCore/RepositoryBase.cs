@@ -50,8 +50,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        return await _dbSet.AsNoTracking()
-            .Where(entity => !entity.Hidden)
+        return await Query()
             .OrderBy(entity => entity.Id)
             .Skip((int)offset)
             .Take((int)limit)
