@@ -4,24 +4,23 @@ using Catalog.Core.Enums;
 namespace Catalog.Core.Models.Settings;
 
 /// <summary>
-/// Represents the coniguration section for API behavior options.
+/// Represents the configuration section for API behavior options.
 /// </summary>
 [ConfigurationSection(nameof(AppSettings.ApiBehavior))]
 public sealed class ApiBehaviorSettings
 {
     /// <summary>
-    /// The maximum number of items to return for paged requests.
+    /// The maximum number of items to return for paginated requests.
     /// </summary>
     public uint MaxItemsPerPage { get; init; } = default;
 
     /// <summary>
-    /// The default number of items to return for paged requests.
+    /// The default number of items to return for paginated requests.
     /// </summary>
     public uint DefaultItemsPerPage { get; init; } = default;
 
     /// <summary>
-    /// Determines which <see cref="Enums.DeleteStrategy"/> to us ewhen deleting
-    /// entitites through API actions.
+    /// Which strategy to use when removing entitites through API requests.
     /// </summary>
-    public DeleteStrategy DeleteStrategy { get; init; } = default;
+    public RemoveStrategy RemoveStrategy { get; init; } = default;
 }

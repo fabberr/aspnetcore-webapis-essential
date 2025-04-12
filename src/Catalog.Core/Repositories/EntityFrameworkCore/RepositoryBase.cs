@@ -127,31 +127,31 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         return updatedEntityEntry.Entity;
     }
 
-    public async Task<TEntity?> DeleteByIdAsync(
+    public async Task<TEntity?> RemoveByIdAsync(
         int key,
-        DeleteStrategy strategy = DeleteStrategy.Delete,
+        RemoveStrategy strategy = RemoveStrategy.Delete,
         CancellationToken cancellationToken = default
     )
     {
-        var entity = await FindByIdAsync(key, cancellationToken);
+        var currentEntity = await FindByIdAsync(key, cancellationToken);
 
-        if (entity is null)
+        if (currentEntity is null)
         {
             return null;
         }
 
-        var deletedEntityEntry = strategy switch {
+        var removedEntity = strategy switch {
 
-            DeleteStrategy.Delete => _dbSet.Remove(entity),
+            RemoveStrategy.Delete => _dbSet.Remove(currentEntity),
 
-            DeleteStrategy.Hide => _setAsHiddenAndUpdateEntity(entity),
+            RemoveStrategy.Hide => _setAsHiddenAndUpdateEntity(currentEntity),
 
             _ => throw new NotSupportedException(),
         };
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return deletedEntityEntry.Entity;
+        return removedEntity.Entity;
 
         #region Local Functions
         EntityEntry<TEntity> _setAsHiddenAndUpdateEntity(TEntity entity) {

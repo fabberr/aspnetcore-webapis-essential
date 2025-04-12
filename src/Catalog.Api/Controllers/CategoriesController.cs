@@ -178,18 +178,18 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var deletedCategory = await _categoryRepository.DeleteByIdAsync(
+        var removedCategory = await _categoryRepository.RemoveByIdAsync(
             key: id,
-            strategy: options.Value.DeleteStrategy,
+            strategy: options.Value.RemoveStrategy,
             cancellationToken: cancellationToken
         );
 
-        if (deletedCategory is null)
+        if (removedCategory is null)
         {
             return NotFound();
         }
 
-        return deletedCategory;
+        return removedCategory;
     }
     #endregion
 }

@@ -50,25 +50,25 @@ public interface IModifiableRepository<TEntity>
     );
 
     /// <summary>
-    /// Deletes an existing entity of type <typeparamref name="TEntity"/> by its
+    /// Removes an existing entity of type <typeparamref name="TEntity"/> by its
     /// key.
     /// </summary>
     /// <param name="key">
     /// Key that identifies a specific entity.
     /// </param>
     /// <param name="strategy">
-    /// The strategy to apply when deleting the entity.
+    /// The strategy to apply when removing the entity.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> for cancelling the operation.
     /// </param>
     /// <returns>
-    /// The deleted entity, or <see langword="null"/> if no entity with the
+    /// The removed entity, or <see langword="null"/> if no entity with the
     /// given <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity?> DeleteByIdAsync(
+    Task<TEntity?> RemoveByIdAsync(
         int key,
-        DeleteStrategy strategy = DeleteStrategy.Delete,
+        RemoveStrategy strategy = RemoveStrategy.Delete,
         CancellationToken cancellationToken = default
     );
 }

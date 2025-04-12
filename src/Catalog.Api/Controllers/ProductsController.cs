@@ -160,18 +160,18 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var deletedProduct = await _productRepository.DeleteByIdAsync(
+        var removedProduct = await _productRepository.RemoveByIdAsync(
             key: id,
-            strategy: options.Value.DeleteStrategy,
+            strategy: options.Value.RemoveStrategy,
             cancellationToken: cancellationToken
         );
 
-        if (deletedProduct is null)
+        if (removedProduct is null)
         {
             return NotFound();
         }
 
-        return deletedProduct;
+        return removedProduct;
     }
     #endregion
 }
