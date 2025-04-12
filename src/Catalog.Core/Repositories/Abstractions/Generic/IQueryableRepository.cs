@@ -20,6 +20,11 @@ public interface IQueryableRepository<TEntity>
     /// Exposes a <see cref="IQueryable{T}"/> object for querying entities of
     /// type <typeparamref name="TEntity"/>.
     /// </summary>
+    /// <remarks>
+    /// Note: Entities marked as hidden (<see cref="EntityBase.Hidden"/> is set
+    /// to <see langword="true"/>) will <b>not</b> be fetched from the data
+    /// source when using this method.
+    /// </remarks>
     /// <returns>
     /// A <see cref="IQueryable{T}"/> instance.
     /// </returns>
