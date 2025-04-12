@@ -133,7 +133,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var entity = await _dbSet.FindAsync([key], cancellationToken);
+        var entity = await GetByIdAsync(key, cancellationToken);
 
         if (entity is null)
         {
@@ -153,7 +153,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
 
         return deletedEntityEntry.Entity;
 
-        #region Local Funcions
+        #region Local Functions
         EntityEntry<TEntity> _setAsHiddenAndUpdateEntity(TEntity entity) {
             entity.Hidden = true;
             return _dbSet.Update(entity);
