@@ -51,8 +51,7 @@ public interface IQueryableRepository<TEntity>
     /// A <see cref="CancellationToken"/> for cancelling the operation.
     /// </param>
     /// <returns>
-    /// An enumerable collection containing entities of type
-    /// <typeparamref name="TEntity"/>.
+    /// A collection containing entities of type <typeparamref name="TEntity"/>.
     /// </returns>
     Task<IEnumerable<TEntity>> GetAsync(
         uint limit = 10u,
@@ -62,7 +61,7 @@ public interface IQueryableRepository<TEntity>
 
     /// <summary>
     /// Queries for entities of type <typeparamref name="TEntity"/> that meet
-    /// the criteria defined in <paramref name="predicate"/>, sorted by
+    /// the search criteria defined in <paramref name="predicate"/>, sorted by
     /// <see cref="EntityBase.Id"/> in ascending order.
     /// </summary>
     /// <remarks>
@@ -83,8 +82,8 @@ public interface IQueryableRepository<TEntity>
     /// A <see cref="CancellationToken"/> for cancelling the operation.
     /// </param>
     /// <returns>
-    /// An enumerable collection containing entities of type
-    /// <typeparamref name="TEntity"/> that meet the criteria.
+    /// A collection containing entities of type <typeparamref name="TEntity"/>
+    /// that meet the search criteria.
     /// </returns>
     Task<IEnumerable<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>> predicate,
@@ -94,8 +93,7 @@ public interface IQueryableRepository<TEntity>
     );
 
     /// <summary>
-    /// Finds an existing entity of type <typeparamref name="TEntity"/> by its
-    /// key.
+    /// Finds an entity of type <typeparamref name="TEntity"/> by its key.
     /// </summary>
     /// <remarks>
     /// Note: Entities marked as hidden (<see cref="EntityBase.Hidden"/> is set
@@ -112,8 +110,33 @@ public interface IQueryableRepository<TEntity>
     /// The entity, or <see langword="null"/> if no entity with the given
     /// <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity?> GetAsync(
+    Task<TEntity?> GetByIdAsync(
         int key,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Finds the first entity of type <typeparamref name="TEntity"/>, sorted by
+    /// <see cref="EntityBase.Id"/> in ascending order, that meets the search
+    /// criteria defined in <paramref name="predicate"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: Entities marked as hidden (<see cref="EntityBase.Hidden"/> is set
+    /// to <see langword="true"/>) will <b>not</b> be fetched from the data
+    /// source when using this method.
+    /// </remarks>
+    /// <param name="predicate">
+    /// Repesents the search criteria as a predicate expression.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
+    /// <returns>
+    /// The first entity that meets the search criteria, or
+    /// <see langword="null"/> if no matches were found.
+    /// </returns>
+    Task<TEntity?> GetByAsync(
+        Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default
     );
 }

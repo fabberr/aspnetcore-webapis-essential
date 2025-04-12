@@ -75,7 +75,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             .ToArrayAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> GetAsync(
+    public async Task<TEntity?> GetByIdAsync(
         int key,
         CancellationToken cancellationToken = default
     )
@@ -88,6 +88,15 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         }
 
         return entity;
+    }
+
+    public Task<TEntity?> GetByAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Query()
+            .FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
     public async Task<TEntity> CreateAsync(

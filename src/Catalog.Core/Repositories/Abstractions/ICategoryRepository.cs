@@ -31,8 +31,7 @@ public interface ICategoryRepository : IRepository<Category>
     /// A <see cref="CancellationToken"/> for cancelling the operation.
     /// </param>
     /// <returns>
-    /// An enumerable collection containing Products belonging to the specified
-    /// Category.
+    /// A collection containing Products belonging to the specified Category.
     /// </returns>
     Task<IEnumerable<Product>>
     GetProductsByCategoryIdAsync(

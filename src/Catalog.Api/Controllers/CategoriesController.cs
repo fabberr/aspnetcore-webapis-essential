@@ -56,7 +56,7 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var category = await _categoryRepository.GetAsync(
+        var category = await _categoryRepository.GetByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -138,7 +138,7 @@ public sealed class CategoriesController(
             );
         }
 
-        var currentCategory = await _categoryRepository.GetAsync(
+        var currentCategory = await _categoryRepository.GetByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );

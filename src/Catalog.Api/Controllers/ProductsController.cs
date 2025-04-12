@@ -51,7 +51,7 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var product = await _productRepository.GetAsync(
+        var product = await _productRepository.GetByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -108,7 +108,7 @@ public sealed class ProductsController(
             );
         }
 
-        var currentProduct = await _productRepository.GetAsync(
+        var currentProduct = await _productRepository.GetByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
