@@ -20,5 +20,5 @@ public sealed class ProductRepository(CatalogDbContext catalogDbContext)
     :  RepositoryBase<Product>(catalogDbContext)
     , IProductRepository
 {
-    protected override DbSet<Product> DbSet => _catalogDbContext.Products;
+    protected override DbSet<Product> EntityDbSet => _catalogDbContext.Products;
 }

@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
@@ -20,10 +21,16 @@ public interface IModifiableRepository<TEntity>
     /// <param name="entity">
     /// The entity to create.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
     /// <returns>
     /// The created entity.
     /// </returns>
-    Task<TEntity> CreateAsync(TEntity entity);
+    Task<TEntity> CreateAsync(
+        TEntity entity,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Updates an existing entity of type <typeparamref name="TEntity"/>.
@@ -31,10 +38,16 @@ public interface IModifiableRepository<TEntity>
     /// <param name="entity">
     /// The entity to update.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
     /// <returns>
     /// The updated entity.
     /// </returns>
-    Task<TEntity> UpdateAsync(TEntity entity);
+    Task<TEntity> UpdateAsync(
+        TEntity entity,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Deletes an existing entity of type <typeparamref name="TEntity"/> by its
@@ -46,9 +59,16 @@ public interface IModifiableRepository<TEntity>
     /// <param name="strategy">
     /// The strategy to apply when deleting the entity.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
     /// <returns>
     /// The deleted entity, or <see langword="null"/> if no entity with the
     /// given <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity?> DeleteAsync(int key, DeleteStrategy strategy = DeleteStrategy.Delete);
+    Task<TEntity?> DeleteAsync(
+        int key,
+        DeleteStrategy strategy = DeleteStrategy.Delete,
+        CancellationToken cancellationToken = default
+    );
 }

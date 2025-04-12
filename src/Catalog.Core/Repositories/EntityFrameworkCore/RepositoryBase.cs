@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Context;
 using Catalog.Core.Enums;
@@ -19,8 +20,8 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// Type of the entity.
 /// </typeparam>
 /// <remarks>
-/// Initializes a new instance of the
-/// <see cref="RepositoryBase{TEntity}"/> class.
+/// Initializes a new instance of the <see cref="RepositoryBase{TEntity}"/>
+/// class.
 /// </remarks>
 /// <param name="catalogDbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance connected to the
@@ -39,23 +40,36 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
     /// Gets a <see cref="DbSet{TEntity}"/> for querying and modifying entities
     /// of type <typeparamref name="TEntity"/>.
     /// </summary>
-    protected abstract DbSet<TEntity> DbSet { get; }
+    protected abstract DbSet<TEntity> EntityDbSet { get; }
     #endregion
 
     #region IRepository<TEntity>
-    public IQueryable<TEntity> Query() => DbSet.AsNoTracking()
-        .Where(entity => !entity.Hidden);
-
-    public async Task<IEnumerable<TEntity>> GetAsync(uint limit = 10, uint offset = 0) => await DbSet.AsNoTracking()
-        .Where(entity => !entity.Hidden)
-        .OrderBy(entity => entity.Id)
-        .Skip((int)offset)
-        .Take((int)limit)
-        .ToArrayAsync();
-
-    public async Task<TEntity?> GetAsync(int key)
+    public IQueryable<TEntity> Query()
     {
-        var entity = await DbSet.FindAsync(key);
+        return EntityDbSet.AsNoTracking()
+            .Where(entity => !entity.Hidden);
+    }
+
+    public async Task<IEnumerable<TEntity>> GetAsync(
+        uint limit = 10,
+        uint offset = 0,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await EntityDbSet.AsNoTracking()
+            .Where(entity => !entity.Hidden)
+            .OrderBy(entity => entity.Id)
+            .Skip((int)offset)
+            .Take((int)limit)
+            .ToArrayAsync(cancellationToken);
+    }
+
+    public async Task<TEntity?> GetAsync(
+        int key,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var entity = await EntityDbSet.FindAsync([key], cancellationToken);
 
         if (entity is { Hidden: true })
         {
@@ -65,27 +79,41 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
         return entity;
     }
 
-    public async Task<TEntity> CreateAsync(TEntity entity)
+    public async Task<TEntity> CreateAsync(
+        TEntity entity,
+        CancellationToken cancellationToken = default
+    )
     {
-        var createdEntityEntry = DbSet.Add(entity);
+        ArgumentNullException.ThrowIfNull(entity);
 
-        await _catalogDbContext.SaveChangesAsync();
+        var createdEntityEntry = await EntityDbSet.AddAsync(entity, cancellationToken);
+
+        await _catalogDbContext.SaveChangesAsync(cancellationToken);
 
         return createdEntityEntry.Entity;
     }
 
-    public async Task<TEntity> UpdateAsync(TEntity entity)
+    public async Task<TEntity> UpdateAsync(
+        TEntity entity,
+        CancellationToken cancellationToken = default
+    )
     {
-        var updatedEntityEntry = DbSet.Update(entity);
+        ArgumentNullException.ThrowIfNull(entity);
 
-        await _catalogDbContext.SaveChangesAsync();
+        var updatedEntityEntry = EntityDbSet.Update(entity);
+
+        await _catalogDbContext.SaveChangesAsync(cancellationToken);
 
         return updatedEntityEntry.Entity;
     }
 
-    public async Task<TEntity?> DeleteAsync(int key, DeleteStrategy strategy = DeleteStrategy.Delete)
+    public async Task<TEntity?> DeleteAsync(
+        int key,
+        DeleteStrategy strategy = DeleteStrategy.Delete,
+        CancellationToken cancellationToken = default
+    )
     {
-        var entity = await DbSet.FindAsync(key);
+        var entity = await EntityDbSet.FindAsync([key], cancellationToken);
 
         if (entity is null)
         {
@@ -94,21 +122,21 @@ public abstract class RepositoryBase<TEntity>(CatalogDbContext catalogDbContext)
 
         var deletedEntityEntry = strategy switch {
 
-            DeleteStrategy.Delete => DbSet.Remove(entity),
+            DeleteStrategy.Delete => EntityDbSet.Remove(entity),
 
             DeleteStrategy.Hide => _setAsHiddenAndUpdateEntity(entity),
 
             _ => throw new NotSupportedException(),
         };
 
-        await _catalogDbContext.SaveChangesAsync();
+        await _catalogDbContext.SaveChangesAsync(cancellationToken);
 
         return deletedEntityEntry.Entity;
 
         #region Local Funcions
         EntityEntry<TEntity> _setAsHiddenAndUpdateEntity(TEntity entity) {
             entity.Hidden = true;
-            return DbSet.Update(entity);
+            return EntityDbSet.Update(entity);
         }
         #endregion
     }

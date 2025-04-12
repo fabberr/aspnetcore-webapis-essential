@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Repositories.Abstractions.Generic;
@@ -26,9 +27,18 @@ public interface ICategoryRepository : IRepository<Category>
     /// <param name="offset">
     /// Number of entries to skip.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
     /// <returns>
     /// An enumerable collection containing Products belonging to the specified
     /// Category.
     /// </returns>
-    Task<IEnumerable<Product>> GetProducts(int categoryKey, uint limit = 10u, uint offset = 0u);
+    Task<IEnumerable<Product>>
+    GetProducts(
+        int categoryKey,
+        uint limit = 10u,
+        uint offset = 0u,
+        CancellationToken cancellationToken = default
+    );
 }

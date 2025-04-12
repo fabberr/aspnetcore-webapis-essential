@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Models.Entities;
@@ -25,12 +26,14 @@ public sealed class ProductsController(
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         uint? limit = null,
-        uint offset = 0u
+        uint offset = 0u,
+        CancellationToken cancellationToken = default
     )
     {
         var products = await _productRepository.GetAsync(
             limit: limit ?? options.Value.DefaultItemsPerPage,
-            offset: offset
+            offset: offset,
+            cancellationToken: cancellationToken
         );
 
         return products.ToArray();
@@ -38,7 +41,8 @@ public sealed class ProductsController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
     public async Task<ActionResult<Product>> GetProductById(
-        int id
+        int id,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -47,7 +51,10 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var product = await _productRepository.GetAsync(key: id);
+        var product = await _productRepository.GetAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
 
         if (product is null)
         {
@@ -61,10 +68,14 @@ public sealed class ProductsController(
     #region POST
     [HttpPost(Name = nameof(CreateProduct))]
     public async Task<ActionResult<Product>> CreateProduct(
-        Product product
+        Product product,
+        CancellationToken cancellationToken = default
     )
     {
-        var createdProduct = await _productRepository.CreateAsync(entity: product);
+        var createdProduct = await _productRepository.CreateAsync(
+            entity: product,
+            cancellationToken: cancellationToken
+        );
 
         return CreatedAtRoute(
             routeName: nameof(GetProductById),
@@ -78,7 +89,8 @@ public sealed class ProductsController(
     [HttpPut(template: "{id:int}", Name = nameof(UpdateProduct))]
     public async Task<ActionResult<Product>> UpdateProduct(
         int id,
-        Product product
+        Product product,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -96,7 +108,11 @@ public sealed class ProductsController(
             );
         }
 
-        var currentProduct = await _productRepository.GetAsync(key: id);
+        var currentProduct = await _productRepository.GetAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
+
         if (currentProduct is null)
         {
             return NotFound();
@@ -123,7 +139,10 @@ public sealed class ProductsController(
             currentProduct.ImageUri = product.ImageUri;
         }
 
-        return await _productRepository.UpdateAsync(entity: currentProduct);
+        return await _productRepository.UpdateAsync(
+            entity: currentProduct,
+            cancellationToken: cancellationToken
+        );
     }
     #endregion
 
@@ -131,7 +150,8 @@ public sealed class ProductsController(
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
     public async Task<ActionResult<Product>> DeleteProduct(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        int id
+        int id,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -142,7 +162,8 @@ public sealed class ProductsController(
 
         var deletedProduct = await _productRepository.DeleteAsync(
             key: id,
-            strategy: options.Value.DeleteStrategy
+            strategy: options.Value.DeleteStrategy,
+            cancellationToken: cancellationToken
         );
 
         if (deletedProduct is null)

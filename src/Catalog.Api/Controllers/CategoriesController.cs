@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Models.Entities;
@@ -25,12 +26,14 @@ public sealed class CategoriesController(
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         uint? limit = null,
-        uint offset = 0u
+        uint offset = 0u,
+        CancellationToken cancellationToken = default
     )
     {
         var categories = await _categoryRepository.GetAsync(
             limit: limit ?? options.Value.DefaultItemsPerPage,
-            offset: offset
+            offset: offset,
+            cancellationToken: cancellationToken
         );
 
         if (categories.Any() is false)
@@ -43,7 +46,8 @@ public sealed class CategoriesController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
     public async Task<ActionResult<Category>> GetCategoryById(
-        int id
+        int id,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -52,7 +56,10 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var category = await _categoryRepository.GetAsync(key: id);
+        var category = await _categoryRepository.GetAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
 
         if (category is null)
         {
@@ -67,7 +74,8 @@ public sealed class CategoriesController(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         int id,
         uint? limit = null,
-        uint offset = 0u
+        uint offset = 0u,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -79,7 +87,8 @@ public sealed class CategoriesController(
         var products = await _categoryRepository.GetProducts(
             categoryKey: id,
             limit: limit ?? options.Value.DefaultItemsPerPage,
-            offset: offset
+            offset: offset,
+            cancellationToken: cancellationToken
         );
 
         return products.ToArray();
@@ -89,10 +98,14 @@ public sealed class CategoriesController(
     #region POST
     [HttpPost(Name = nameof(CreateCategory))]
     public async Task<ActionResult<Category>> CreateCategory(
-        Category category
+        Category category,
+        CancellationToken cancellationToken = default
     )
     {
-        var createdCategory = await _categoryRepository.CreateAsync(entity: category);
+        var createdCategory = await _categoryRepository.CreateAsync(
+            entity: category,
+            cancellationToken: cancellationToken
+        );
 
         return CreatedAtRoute(
             routeName: nameof(GetCategoryById),
@@ -106,7 +119,8 @@ public sealed class CategoriesController(
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryAsync))]
     public async Task<ActionResult<Category>> UpdateCategoryAsync(
         int id,
-        Category category
+        Category category,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -124,7 +138,11 @@ public sealed class CategoriesController(
             );
         }
 
-        var currentCategory = await _categoryRepository.GetAsync(key: id);
+        var currentCategory = await _categoryRepository.GetAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
+
         if (currentCategory is null)
         {
             return NotFound();
@@ -139,7 +157,10 @@ public sealed class CategoriesController(
             currentCategory.ImageUri = category.ImageUri;
         }
 
-        return await _categoryRepository.UpdateAsync(entity: currentCategory);
+        return await _categoryRepository.UpdateAsync(
+            entity: currentCategory,
+            cancellationToken: cancellationToken
+        );
     }
     #endregion
 
@@ -147,7 +168,8 @@ public sealed class CategoriesController(
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
     public async Task<ActionResult<Category>> DeleteCategory(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        int id
+        int id,
+        CancellationToken cancellationToken = default
     )
     {
         if (id <= 0)
@@ -158,7 +180,8 @@ public sealed class CategoriesController(
 
         var deletedCategory = await _categoryRepository.DeleteAsync(
             key: id,
-            strategy: options.Value.DeleteStrategy
+            strategy: options.Value.DeleteStrategy,
+            cancellationToken: cancellationToken
         );
 
         if (deletedCategory is null)

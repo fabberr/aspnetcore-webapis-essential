@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
 
@@ -39,11 +40,18 @@ public interface IQueryableRepository<TEntity>
     /// <param name="offset">
     /// Number of entries to skip.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
     /// <returns>
     /// An enumerable collection containing entities of type
     /// <typeparamref name="TEntity"/>.
     /// </returns>
-    Task<IEnumerable<TEntity>> GetAsync(uint limit = 10u, uint offset = 0u);
+    Task<IEnumerable<TEntity>> GetAsync(
+        uint limit = 10u,
+        uint offset = 0u,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Finds an existing entity of type <typeparamref name="TEntity"/> by its
@@ -57,9 +65,15 @@ public interface IQueryableRepository<TEntity>
     /// <param name="key">
     /// Key that identifies a specific entity.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// </param>
     /// <returns>
     /// The entity, or <see langword="null"/> if no entity with the given
     /// <paramref name="key"/> was found.
     /// </returns>
-    Task<TEntity?> GetAsync(int key);
+    Task<TEntity?> GetAsync(
+        int key,
+        CancellationToken cancellationToken = default
+    );
 }
