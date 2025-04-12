@@ -35,7 +35,7 @@ public interface ICategoryRepository : IRepository<Category>
     /// Category.
     /// </returns>
     Task<IEnumerable<Product>>
-    GetProducts(
+    GetProductsByCategoryIdAsync(
         int categoryKey,
         uint limit = 10u,
         uint offset = 0u,

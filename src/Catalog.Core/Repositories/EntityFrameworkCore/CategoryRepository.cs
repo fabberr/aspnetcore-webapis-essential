@@ -22,7 +22,7 @@ public sealed class CategoryRepository(DbContext dbContext)
     : RepositoryBase<Category>(dbContext)
     , ICategoryRepository
 {
-    public async Task<IEnumerable<Product>> GetProducts(
+    public async Task<IEnumerable<Product>> GetProductsByCategoryIdAsync(
         int key,
         uint limit = 10u,
         uint offset = 0u,
