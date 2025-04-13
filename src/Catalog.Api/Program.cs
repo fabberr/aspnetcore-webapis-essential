@@ -61,6 +61,9 @@ builder.Services
     .AddScoped<IProductRepository, ProductRepository>();
 
 builder.Services
+    .AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services
     .AddControllers()
     .AddJsonOptions((options) => {
         options.JsonSerializerOptions.AllowTrailingCommas = false;

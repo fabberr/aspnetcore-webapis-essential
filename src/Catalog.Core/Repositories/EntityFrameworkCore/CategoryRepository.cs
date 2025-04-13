@@ -14,4 +14,8 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// <param name="dbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance.
 /// </param>
-public sealed class CategoryRepository(DbContext dbContext) : RepositoryBase<Category>(dbContext), ICategoryRepository;
+public sealed class CategoryRepository(
+    DbContext dbContext
+)
+    : RepositoryBase<Category>(dbContext)
+    , ICategoryRepository;

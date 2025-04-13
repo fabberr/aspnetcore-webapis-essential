@@ -20,7 +20,11 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// <param name="dbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance.
 /// </param>
-public sealed class ProductRepository(DbContext dbContext) : RepositoryBase<Product>(dbContext), IProductRepository
+public sealed class ProductRepository(
+    DbContext dbContext
+)
+    : RepositoryBase<Product>(dbContext)
+    , IProductRepository
 {
     public async Task<IEnumerable<Product>> QueryMultipleByCategoryIdAsync(
         int key,

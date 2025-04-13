@@ -125,12 +125,10 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
 
         var createdEntityEntry = await _dbSet.AddAsync(entity, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
         return createdEntityEntry.Entity;
     }
 
-    public async Task<TEntity> UpdateAsync(
+    public Task<TEntity> UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default
     )
@@ -139,9 +137,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
 
         var updatedEntityEntry = _dbSet.Update(entity);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return updatedEntityEntry.Entity;
+        return Task.FromResult(updatedEntityEntry.Entity);
     }
 
     public async Task<TEntity?> RemoveByIdAsync(
@@ -169,8 +165,6 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
 
             _ => throw new NotSupportedException(),
         };
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return removedEntity.Entity;
 
@@ -211,8 +205,6 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             default:
                 throw new NotSupportedException();
         }
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return entities;
 

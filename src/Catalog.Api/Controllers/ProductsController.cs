@@ -14,12 +14,12 @@ namespace Catalog.Api.Controllers;
 
 [Route("api/[controller]")]
 public sealed class ProductsController(
-    IProductRepository productRepository
+    IUnitOfWork unitOfWork
 )
     : CatalogApiController
 {
     #region Dependencies
-    private readonly IProductRepository _productRepository = productRepository;
+    private readonly IUnitOfWork _unit = unitOfWork;
     #endregion
 
     #region GET
@@ -31,7 +31,7 @@ public sealed class ProductsController(
         CancellationToken cancellationToken = default
     )
     {
-        var products = await _productRepository.QueryMultipleAsync(
+        var products = await _unit.ProductRepository.QueryMultipleAsync(
             configureOptions: () => new PaginatedQueryOptions(
                 Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
                 Offset: (int)offset
@@ -54,7 +54,7 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var product = await _productRepository.FindByIdAsync(
+        var product = await _unit.ProductRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -82,7 +82,7 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var products = await _productRepository.QueryMultipleByCategoryIdAsync(
+        var products = await _unit.ProductRepository.QueryMultipleByCategoryIdAsync(
             categoryKey: categoryId,
             configureOptions: () => new PaginatedQueryOptions(
                 Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
@@ -102,10 +102,11 @@ public sealed class ProductsController(
         CancellationToken cancellationToken = default
     )
     {
-        var createdProduct = await _productRepository.CreateAsync(
+        var createdProduct = await _unit.ProductRepository.CreateAsync(
             entity: product,
             cancellationToken: cancellationToken
         );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
         return CreatedAtRoute(
             routeName: nameof(GetProductById),
@@ -138,7 +139,7 @@ public sealed class ProductsController(
             );
         }
 
-        var currentProduct = await _productRepository.FindByIdAsync(
+        var currentProduct = await _unit.ProductRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -169,10 +170,13 @@ public sealed class ProductsController(
             currentProduct.ImageUri = product.ImageUri;
         }
 
-        return await _productRepository.UpdateAsync(
+        var updatedProduct = await _unit.ProductRepository.UpdateAsync(
             entity: currentProduct,
             cancellationToken: cancellationToken
         );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        return updatedProduct;
     }
     #endregion
 
@@ -190,11 +194,12 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        var removedProduct = await _productRepository.RemoveByIdAsync(
+        var removedProduct = await _unit.ProductRepository.RemoveByIdAsync(
             key: id,
             strategy: options.Value.RemoveStrategy,
             cancellationToken: cancellationToken
         );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
         if (removedProduct is null)
         {

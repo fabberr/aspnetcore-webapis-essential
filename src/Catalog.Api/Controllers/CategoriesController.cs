@@ -14,12 +14,12 @@ namespace Catalog.Api.Controllers;
 
 [Route("api/[controller]")]
 public sealed class CategoriesController(
-    ICategoryRepository categoryRepository
+    IUnitOfWork unitOfWork
 )
     : CatalogApiController
 {
     #region Dependencies
-    private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly IUnitOfWork _unit = unitOfWork;
     #endregion
 
     #region GET
@@ -31,7 +31,7 @@ public sealed class CategoriesController(
         CancellationToken cancellationToken = default
     )
     {
-        var categories = await _categoryRepository.QueryMultipleAsync(
+        var categories = await _unit.CategoryRepository.QueryMultipleAsync(
             configureOptions: () => new PaginatedQueryOptions(
                 Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
                 Offset: (int)offset
@@ -59,7 +59,7 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var category = await _categoryRepository.FindByIdAsync(
+        var category = await _unit.CategoryRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -80,10 +80,11 @@ public sealed class CategoriesController(
         CancellationToken cancellationToken = default
     )
     {
-        var createdCategory = await _categoryRepository.CreateAsync(
+        var createdCategory = await _unit.CategoryRepository.CreateAsync(
             entity: category,
             cancellationToken: cancellationToken
         );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
         return CreatedAtRoute(
             routeName: nameof(GetCategoryById),
@@ -116,7 +117,7 @@ public sealed class CategoriesController(
             );
         }
 
-        var currentCategory = await _categoryRepository.FindByIdAsync(
+        var currentCategory = await _unit.CategoryRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
         );
@@ -135,10 +136,13 @@ public sealed class CategoriesController(
             currentCategory.ImageUri = category.ImageUri;
         }
 
-        return await _categoryRepository.UpdateAsync(
+        var updatedCategory = await _unit.CategoryRepository.UpdateAsync(
             entity: currentCategory,
             cancellationToken: cancellationToken
         );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        return updatedCategory;
     }
     #endregion
 
@@ -156,11 +160,12 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        var removedCategory = await _categoryRepository.RemoveByIdAsync(
+        var removedCategory = await _unit.CategoryRepository.RemoveByIdAsync(
             key: id,
             strategy: options.Value.RemoveStrategy,
             cancellationToken: cancellationToken
         );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
         if (removedCategory is null)
         {
