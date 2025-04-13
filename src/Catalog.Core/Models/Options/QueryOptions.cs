@@ -12,7 +12,13 @@ namespace Catalog.Core.Models.Options;
 /// Whether hidden entities (<see cref="EntityBase.Hidden"/> is set to
 /// <see langword="true"/>) entities should be included in the query or not.
 /// </param>
-public record QueryOptions(bool IncludeHiddenEntities = false)
+/// <param name="TrackChanges">
+/// Whether to track changes made to the entities returned from the query or not.
+/// </param>
+public record QueryOptions(
+    bool IncludeHiddenEntities = false,
+    bool TrackChanges = false
+)
 {
     /// <summary>
     /// Represents a set of default query options.
@@ -24,7 +30,14 @@ public record QueryOptions(bool IncludeHiddenEntities = false)
     ///         <term><c><see cref="IncludeHiddenEntities"/></c></term>
     ///         <description><c><see langword="false"/></c></description>
     ///     </item>
+    ///     <item>
+    ///         <term><c><see cref="TrackChanges"/></c></term>
+    ///         <description><c><see langword="false"/></c></description>
+    ///     </item>
     /// </list>
     /// </remarks>
-    public static QueryOptions Default => new(IncludeHiddenEntities: false);
+    public static QueryOptions Default => new(
+        IncludeHiddenEntities: false,
+        TrackChanges: false
+    );
 }

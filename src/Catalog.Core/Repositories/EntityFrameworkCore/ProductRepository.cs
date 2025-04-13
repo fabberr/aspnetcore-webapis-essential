@@ -47,8 +47,7 @@ public sealed class ProductRepository(DbContext dbContext) : RepositoryBase<Prod
 
         if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
         {
-            var (_, limit, offset) = paginationOptions;
-            query = query.Skip(offset).Take(limit)
+            query = query.Skip(paginationOptions.Offset).Take(paginationOptions.Limit)
                 as IOrderedQueryable<Product>;
         }
 

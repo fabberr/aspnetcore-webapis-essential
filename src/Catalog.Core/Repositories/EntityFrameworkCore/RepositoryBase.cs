@@ -44,7 +44,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var query = _dbSet.AsNoTracking();
+        var query = options.TrackChanges ? _dbSet : _dbSet.AsNoTracking();
 
         if (options.IncludeHiddenEntities is false)
         {
@@ -55,8 +55,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
 
         if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
         {
-            var (_, limit, offset) = paginationOptions;
-            query = query.Skip(offset).Take(limit)
+            query = query.Skip(paginationOptions.Offset).Take(paginationOptions.Limit)
                 as IOrderedQueryable<TEntity>;
         }
 
@@ -192,8 +191,14 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var entities = Query(options: new PaginatedQueryOptions(Limit: -1))
-            .Where(predicate);
+        var options = new PaginatedQueryOptions(
+            TrackChanges: true,
+            Limit: -1
+        );
+
+        var entities = await Query(options: options)
+            .Where(predicate)
+            .ToArrayAsync(cancellationToken);
 
         switch (strategy)
         {

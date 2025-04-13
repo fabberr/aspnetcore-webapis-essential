@@ -13,6 +13,9 @@ namespace Catalog.Core.Models.Options;
 /// Whether hidden entities (<see cref="EntityBase.Hidden"/> is set to
 /// <see langword="true"/>) entities should be included in the query or not.
 /// </param>
+/// <param name="TrackChanges">
+/// Whether to track changes made to the entities returned from the query or not.
+/// </param>
 /// <param name="Limit">
 /// Delimits the number of entries which will be fetched at most.<br/>
 /// Set to <c>-1</c> to disable pagination for this query.
@@ -20,8 +23,13 @@ namespace Catalog.Core.Models.Options;
 /// <param name="Offset">
 /// Number of entries to skip.
 /// </param>
-public record PaginatedQueryOptions(bool IncludeHiddenEntities = false, int Limit = 10, int Offset = 0)
-    : QueryOptions(IncludeHiddenEntities)
+public record PaginatedQueryOptions(
+    bool IncludeHiddenEntities = false,
+    bool TrackChanges = false,
+    int Limit = 10,
+    int Offset = 0
+)
+    : QueryOptions(IncludeHiddenEntities, TrackChanges)
 {
     /// <summary>
     /// Represents a set of default query options.
@@ -31,6 +39,10 @@ public record PaginatedQueryOptions(bool IncludeHiddenEntities = false, int Limi
     /// <list type="bullet">
     ///     <item>
     ///         <term><c><see cref="QueryOptions.IncludeHiddenEntities"/></c></term>
+    ///         <description><c><see langword="false"/></c></description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c><see cref="QueryOptions.TrackChanges"/></c></term>
     ///         <description><c><see langword="false"/></c></description>
     ///     </item>
     ///     <item>
@@ -45,6 +57,7 @@ public record PaginatedQueryOptions(bool IncludeHiddenEntities = false, int Limi
     /// </remarks>
     public static new PaginatedQueryOptions Default => new(
         IncludeHiddenEntities: QueryOptions.Default.IncludeHiddenEntities,
+        TrackChanges: QueryOptions.Default.TrackChanges,
         Limit: 10,
         Offset: 0
     );
