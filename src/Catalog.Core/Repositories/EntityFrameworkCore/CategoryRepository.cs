@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Options;
 using Catalog.Core.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,14 +24,15 @@ public sealed class CategoryRepository(DbContext dbContext)
     : RepositoryBase<Category>(dbContext)
     , ICategoryRepository
 {
-    public async Task<IEnumerable<Product>> GetProductsByCategoryIdAsync(
+    public async Task<IEnumerable<Product>> QueryMultipleProductsByCategoryIdAsync(
         int key,
-        uint limit = 10u,
-        uint offset = 0u,
+        Func<QueryOptions>? configureOptions = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await _dbSet.AsNoTracking()
+        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+
+        var query = _dbSet.AsNoTracking()
             .Join(
                 _dbContext.Set<Product>().AsNoTracking(),
                 category => category.Id, product => product.CategoryId,
@@ -41,9 +44,15 @@ public sealed class CategoryRepository(DbContext dbContext)
                 && !categoryProduct.Product.Hidden
             ))
             .Select(categoryProduct => categoryProduct.Product)
-            .OrderBy(product => product.Id)
-            .Skip((int)offset)
-            .Take((int)limit)
-            .ToArrayAsync(cancellationToken);
+            .OrderBy(product => product.Id);
+
+        if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
+        {
+            var (_, limit, offset) = paginationOptions;
+            query = query.Skip(offset).Take(limit)
+                as IOrderedQueryable<Product>;
+        }
+
+        return await query!.ToArrayAsync(cancellationToken);
     }
 }

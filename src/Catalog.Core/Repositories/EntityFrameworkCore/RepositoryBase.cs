@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Options;
 using Catalog.Core.Repositories.Abstractions.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -39,63 +40,80 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     #endregion
 
     #region IRepository<TEntity>
-    public IQueryable<TEntity> Query()
+    public IQueryable<TEntity> Query(QueryOptions options)
     {
-        return _dbSet.AsNoTracking()
-            .Where(entity => !entity.Hidden);
+        ArgumentNullException.ThrowIfNull(options);
+
+        var query = _dbSet.AsNoTracking();
+
+        if (options.IncludeHiddenEntities is false)
+        {
+            query = query.Where(entity => !entity.Hidden);
+        }
+        
+        query = query.OrderBy(entity => entity.Id);
+
+        if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
+        {
+            var (_, limit, offset) = paginationOptions;
+            query = query.Skip(offset).Take(limit)
+                as IOrderedQueryable<TEntity>;
+        }
+
+        return query!;
     }
 
     public async Task<IEnumerable<TEntity>> QueryMultipleAsync(
-        uint limit = 10,
-        uint offset = 0,
+        Func<QueryOptions>? configureOptions = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await Query()
-            .OrderBy(entity => entity.Id)
-            .Skip((int)offset)
-            .Take((int)limit)
+        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+
+        return await Query(options: options)
             .ToArrayAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<TEntity>> QueryMultipleByPredicateAsync(
         Expression<Func<TEntity, bool>> predicate,
-        uint limit = 10,
-        uint offset = 0,
+        Func<QueryOptions>? configureOptions = null,
         CancellationToken cancellationToken = default
     )
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        return await Query()
+        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+
+        return await Query(options: options)
             .Where(predicate)
-            .OrderBy(entity => entity.Id)
-            .Skip((int)offset)
-            .Take((int)limit)
             .ToArrayAsync(cancellationToken);
     }
 
     public async Task<TEntity?> FindByIdAsync(
         int key,
+        Func<QueryOptions>? configureOptions = null,
         CancellationToken cancellationToken = default
     )
     {
         var entity = await _dbSet.FindAsync([key], cancellationToken);
 
-        if (entity is { Hidden: true })
-        {
-            return null;
-        }
+        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
 
-        return entity;
+        return entity switch {
+            { Hidden: true } when options.IncludeHiddenEntities is false => null,
+            _ => entity
+        };
     }
 
     public Task<TEntity?> FindByPredicateAsync(
         Expression<Func<TEntity, bool>> predicate,
+        Func<QueryOptions>? configureOptions = null,
         CancellationToken cancellationToken = default
     )
     {
-        return Query()
+        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
+
+        return Query(options: options)
             .FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
@@ -133,7 +151,10 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var currentEntity = await FindByIdAsync(key, cancellationToken);
+        var currentEntity = await FindByIdAsync(
+            key: key,
+            cancellationToken: cancellationToken
+        );
 
         if (currentEntity is null)
         {
@@ -141,10 +162,11 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         }
 
         var removedEntity = strategy switch {
+            RemoveStrategy.Delete
+                => _dbSet.Remove(currentEntity),
 
-            RemoveStrategy.Delete => _dbSet.Remove(currentEntity),
-
-            RemoveStrategy.Hide => _setAsHiddenAndUpdateEntity(currentEntity),
+            RemoveStrategy.Hide
+                => _setAsHiddenAndUpdate(currentEntity),
 
             _ => throw new NotSupportedException(),
         };
@@ -154,7 +176,8 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         return removedEntity.Entity;
 
         #region Local Functions
-        EntityEntry<TEntity> _setAsHiddenAndUpdateEntity(TEntity entity) {
+        EntityEntry<TEntity> _setAsHiddenAndUpdate(TEntity entity)
+        {
             entity.Hidden = true;
             return _dbSet.Update(entity);
         }

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Options;
 using Catalog.Core.Models.Settings;
 using Catalog.Core.Repositories.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -31,8 +32,10 @@ public sealed class ProductsController(
     )
     {
         var products = await _productRepository.QueryMultipleAsync(
-            limit: limit ?? options.Value.DefaultItemsPerPage,
-            offset: offset,
+            configureOptions: () => new PaginatedQueryOptions(
+                Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
+                Offset: (int)offset
+            ),
             cancellationToken: cancellationToken
         );
 

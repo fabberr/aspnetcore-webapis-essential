@@ -22,7 +22,8 @@ public interface IModifiableRepository<TEntity>
     /// The entity to create.
     /// </param>
     /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// A <see cref="CancellationToken"/> to observe while waiting for the
+    /// operation to complete.
     /// </param>
     /// <returns>
     /// The created entity.
@@ -39,7 +40,8 @@ public interface IModifiableRepository<TEntity>
     /// The entity to update.
     /// </param>
     /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// A <see cref="CancellationToken"/> to observe while waiting for the
+    /// operation to complete.
     /// </param>
     /// <returns>
     /// The updated entity.
@@ -60,7 +62,8 @@ public interface IModifiableRepository<TEntity>
     /// The strategy to apply when removing the entity.
     /// </param>
     /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> for cancelling the operation.
+    /// A <see cref="CancellationToken"/> to observe while waiting for the
+    /// operation to complete.
     /// </param>
     /// <returns>
     /// The removed entity, or <see langword="null"/> if no entity with the
