@@ -66,6 +66,33 @@ public sealed class ProductsController(
 
         return product;
     }
+
+    [HttpGet(template: "category/{categoryId:int}", Name = nameof(GetProductsByCategoryId))]
+    public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategoryId(
+        IOptionsSnapshot<ApiBehaviorSettings> options,
+        [FromRoute] int categoryId,
+        [FromQuery] uint? limit = null,
+        [FromQuery] uint offset = 0u,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (categoryId <= 0)
+        {
+            ModelState.TryAddModelError(nameof(categoryId), string.Format(Messages.Validation.InvalidValue, categoryId));
+            return ValidationProblem(ModelState);
+        }
+
+        var products = await _productRepository.QueryMultipleByCategoryIdAsync(
+            categoryKey: categoryId,
+            configureOptions: () => new PaginatedQueryOptions(
+                Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
+                Offset: (int)offset
+            ),
+            cancellationToken: cancellationToken
+        );
+
+        return products.ToArray();
+    }
     #endregion
 
     #region POST

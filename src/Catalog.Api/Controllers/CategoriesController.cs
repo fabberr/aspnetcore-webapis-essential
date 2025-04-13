@@ -71,33 +71,6 @@ public sealed class CategoriesController(
 
         return category;
     }
-
-    [HttpGet(template: "{id:int}/products", Name = nameof(GetProductsByCategory))]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(
-        IOptionsSnapshot<ApiBehaviorSettings> options,
-        [FromRoute] int id,
-        [FromQuery] uint? limit = null,
-        [FromQuery] uint offset = 0u,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
-        var products = await _categoryRepository.QueryMultipleProductsByCategoryIdAsync(
-            categoryKey: id,
-            configureOptions: () => new PaginatedQueryOptions(
-                Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
-                Offset: (int)offset
-            ),
-            cancellationToken: cancellationToken
-        );
-
-        return products.ToArray();
-    }
     #endregion
 
     #region POST

@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Options;
 using Catalog.Core.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,4 +20,38 @@ namespace Catalog.Core.Repositories.EntityFrameworkCore;
 /// <param name="dbContext">
 /// An Entity Framework Core <see cref="DbContext"/> instance.
 /// </param>
-public sealed class ProductRepository(DbContext dbContext) : RepositoryBase<Product>(dbContext), IProductRepository;
+public sealed class ProductRepository(DbContext dbContext) : RepositoryBase<Product>(dbContext), IProductRepository
+{
+    public async Task<IEnumerable<Product>> QueryMultipleByCategoryIdAsync(
+        int key,
+        Func<QueryOptions>? configureOptions = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+
+        var query = _dbSet.AsNoTracking()
+            .Join(
+                inner: _dbContext.Set<Category>().AsNoTracking(),
+                outerKeySelector: product => product.CategoryId,
+                innerKeySelector: category => category.Id,
+                resultSelector: (Product, Category) => new { Product, Category }
+            )
+            .Where(joined => (
+                joined.Category.Id == key
+                && !joined.Product.Hidden
+                && !joined.Category.Hidden
+            ))
+            .Select(joined => joined.Product)
+            .OrderBy(product => product.Id);
+
+        if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
+        {
+            var (_, limit, offset) = paginationOptions;
+            query = query.Skip(offset).Take(limit)
+                as IOrderedQueryable<Product>;
+        }
+
+        return await query!.ToArrayAsync(cancellationToken);
+    }
+}
