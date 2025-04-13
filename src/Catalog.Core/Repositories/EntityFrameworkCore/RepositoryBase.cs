@@ -183,5 +183,44 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         }
         #endregion
     }
+
+    public async Task<IEnumerable<TEntity>> RemoveByPredicateAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        RemoveStrategy strategy = RemoveStrategy.Delete,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var entities = Query(options: new PaginatedQueryOptions(Limit: -1))
+            .Where(predicate);
+
+        switch (strategy)
+        {
+            case RemoveStrategy.Delete:
+                _dbSet.RemoveRange(entities);
+                break;
+            case RemoveStrategy.Hide:
+                _setAsHiddenAndUpdateRange(entities);
+                break;
+            default:
+                throw new NotSupportedException();
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return entities;
+
+        #region Local Functions
+        void _setAsHiddenAndUpdateRange(IEnumerable<TEntity> entities)
+        {
+            foreach (var entity in entities)
+            {
+                entity.Hidden = true;
+            }
+            _dbSet.UpdateRange(entities);
+        }
+        #endregion
+    }
     #endregion
 }

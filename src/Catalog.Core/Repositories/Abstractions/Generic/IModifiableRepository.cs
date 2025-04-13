@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Enums;
@@ -71,6 +74,30 @@ public interface IModifiableRepository<TEntity>
     /// </returns>
     Task<TEntity?> RemoveByIdAsync(
         int key,
+        RemoveStrategy strategy = RemoveStrategy.Delete,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Removes existing entities of type <typeparamref name="TEntity"/> that
+    /// meet the search criteria defined in <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="predicate">
+    /// Repesents the search criteria as a predicate expression.
+    /// </param>
+    /// <param name="strategy">
+    /// The strategy to apply when removing the entities.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> to observe while waiting for the
+    /// operation to complete.
+    /// </param>
+    /// <returns>
+    /// A collection containing entities of type <typeparamref name="TEntity"/>
+    /// that meet the search criteria and were removed successfully.
+    /// </returns>
+    Task<IEnumerable<TEntity>> RemoveByPredicateAsync(
+        Expression<Func<TEntity, bool>> predicate,
         RemoveStrategy strategy = RemoveStrategy.Delete,
         CancellationToken cancellationToken = default
     );
