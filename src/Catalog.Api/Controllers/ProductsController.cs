@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
+using Catalog.Api.Models.DTOs.Products;
 using Catalog.Core.Models.Entities;
 using Catalog.Core.Models.Options;
 using Catalog.Core.Models.Settings;
@@ -24,7 +24,7 @@ public sealed class ProductsController(
 
     #region GET
     [HttpGet(Name = nameof(GetProducts))]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
+    public async Task<ActionResult<IEnumerable<GetProductResponse>>> GetProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromQuery] uint? limit = null,
         [FromQuery] uint offset = 0u,
@@ -38,37 +38,19 @@ public sealed class ProductsController(
             ),
             cancellationToken: cancellationToken
         );
+        
+        var response = products.ToGetResponse();
 
-        return products.ToArray();
-    }
-
-    [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
-    public async Task<ActionResult<Product>> GetProductById(
-        [FromRoute] int id,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (id <= 0)
+        if (response is null or { Length: 0 })
         {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
+            return NoContent();
         }
 
-        var product = await _unit.ProductRepository.FindByIdAsync(
-            key: id,
-            cancellationToken: cancellationToken
-        );
-
-        if (product is null)
-        {
-            return NotFound();
-        }
-
-        return product;
+        return response;
     }
 
     [HttpGet(template: "category/{categoryId:int}", Name = nameof(GetProductsByCategoryId))]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategoryId(
+    public async Task<ActionResult<IEnumerable<GetProductResponse>>> GetProductsByCategoryId(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int categoryId,
         [FromQuery] uint? limit = null,
@@ -91,36 +73,19 @@ public sealed class ProductsController(
             cancellationToken: cancellationToken
         );
 
-        return products.ToArray();
+        var response = products.ToGetResponse();
+
+        if (response is null or { Length: 0 })
+        {
+            return NoContent();
+        }
+
+        return response;
     }
-    #endregion
 
-    #region POST
-    [HttpPost(Name = nameof(CreateProduct))]
-    public async Task<ActionResult<Product>> CreateProduct(
-        [FromBody] Product product,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var createdProduct = await _unit.ProductRepository.CreateAsync(
-            entity: product,
-            cancellationToken: cancellationToken
-        );
-        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
-
-        return CreatedAtRoute(
-            routeName: nameof(GetProductById),
-            routeValues: new { id = product.Id },
-            value: createdProduct
-        );
-    }
-    #endregion
-
-    #region PUT
-    [HttpPut(template: "{id:int}", Name = nameof(UpdateProduct))]
-    public async Task<ActionResult<Product>> UpdateProduct(
+    [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
+    public async Task<ActionResult<GetProductResponse>> GetProductById(
         [FromRoute] int id,
-        [FromBody] Product product,
         CancellationToken cancellationToken = default
     )
     {
@@ -130,14 +95,67 @@ public sealed class ProductsController(
             return ValidationProblem(ModelState);
         }
 
-        if (id != product.Id)
+        var product = await _unit.ProductRepository.FindByIdAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
+
+        if (product is null)
+        {
+            return NotFound();
+        }
+
+        return product.ToGetResponse();
+    }
+    #endregion
+
+    #region POST
+    [HttpPost(Name = nameof(CreateProduct))]
+    public async Task<ActionResult<CreateProductResponse>> CreateProduct(
+        [FromBody] CreateProductRequest createProductRequest,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var createdProduct = await _unit.ProductRepository.CreateAsync(
+            entity: createProductRequest.ToEntity(),
+            cancellationToken: cancellationToken
+        );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        var response = createdProduct.ToCreateResponse();
+
+        return CreatedAtRoute(
+            routeName: nameof(GetProductById),
+            routeValues: new { id = response.Id },
+            value: response
+        );
+    }
+    #endregion
+
+    #region PUT
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateProductById))]
+    public async Task<ActionResult<UpdateProductResponse>> UpdateProductById(
+        [FromRoute] int id,
+        [FromBody] UpdateProductRequest updateProductRequest,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (id <= 0)
+        {
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
+        }
+
+        if (id != updateProductRequest.Id)
         {
             ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, product.Id),
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, updateProductRequest.Id),
                 modelStateDictionary: ModelState
             );
         }
+
+        var product = updateProductRequest.ToEntity();
 
         var currentProduct = await _unit.ProductRepository.FindByIdAsync(
             key: id,
@@ -149,11 +167,11 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        if (product.Name is not "" && product.Name != currentProduct.Name)
+        if (string.IsNullOrWhiteSpace(product.Name) is not true && product.Name != currentProduct.Name)
         {
             currentProduct.Name = product.Name;
         }
-        if (product.Description is not "" && product.Description != currentProduct.Description)
+        if (string.IsNullOrWhiteSpace(product.Description) is not true && product.Description != currentProduct.Description)
         {
             currentProduct.Description = product.Description;
         }
@@ -165,9 +183,13 @@ public sealed class ProductsController(
         {
             currentProduct.Stock = product.Stock;
         }
-        if (product.ImageUri is not "" && product.ImageUri != currentProduct.ImageUri)
+        if (string.IsNullOrWhiteSpace(product.ImageUri) is not true && product.ImageUri != currentProduct.ImageUri)
         {
             currentProduct.ImageUri = product.ImageUri;
+        }
+        if (product.CategoryId != default && product.CategoryId != currentProduct.CategoryId)
+        {
+            currentProduct.CategoryId = product.CategoryId;
         }
 
         var updatedProduct = await _unit.ProductRepository.UpdateAsync(
@@ -176,13 +198,13 @@ public sealed class ProductsController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return updatedProduct;
+        return updatedProduct.ToUpdateResponse();
     }
     #endregion
 
     #region DELETE
-    [HttpDelete(template: "{id:int}", Name = nameof(DeleteProduct))]
-    public async Task<ActionResult<Product>> DeleteProduct(
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductById))]
+    public async Task<ActionResult<DeleteProductResponse>> DeleteProductById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int id,
         CancellationToken cancellationToken = default
@@ -206,7 +228,7 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        return removedProduct;
+        return removedProduct.ToDeleteResponse();
     }
     #endregion
 }

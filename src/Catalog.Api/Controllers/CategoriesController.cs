@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
-using Catalog.Core.Models.Entities;
+using Catalog.Api.Models.DTOs.Categories;
 using Catalog.Core.Models.Options;
 using Catalog.Core.Models.Settings;
 using Catalog.Core.Repositories.Abstractions;
@@ -24,7 +24,7 @@ public sealed class CategoriesController(
 
     #region GET
     [HttpGet(Name = nameof(GetCategories))]
-    public async Task<ActionResult<IEnumerable<Category>>> GetCategories(
+    public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromQuery] uint? limit = null,
         [FromQuery] uint offset = 0u,
@@ -44,11 +44,18 @@ public sealed class CategoriesController(
             return NoContent();
         }
 
-        return categories.ToArray();
+        var response = categories.ToGetResponse();
+
+        if (response is null or { Length: 0 })
+        {
+            return NoContent();
+        }
+
+        return response;
     }
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
-    public async Task<ActionResult<Category>> GetCategoryById(
+    public async Task<ActionResult<GetCategoryResponse>> GetCategoryById(
         [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
@@ -69,36 +76,38 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        return category;
+        return category.ToGetResponse();
     }
     #endregion
 
     #region POST
     [HttpPost(Name = nameof(CreateCategory))]
-    public async Task<ActionResult<Category>> CreateCategory(
-        [FromBody] Category category,
+    public async Task<ActionResult<CreateCategoryResponse>> CreateCategory(
+        [FromBody] CreateCategoryRequest createCategoryRequest,
         CancellationToken cancellationToken = default
     )
     {
         var createdCategory = await _unit.CategoryRepository.CreateAsync(
-            entity: category,
+            entity: createCategoryRequest.ToEntity(),
             cancellationToken: cancellationToken
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
+        var response = createdCategory.ToCreateResponse();
+
         return CreatedAtRoute(
             routeName: nameof(GetCategoryById),
-            routeValues: new { id = category.Id },
-            value: createdCategory
+            routeValues: new { id = response.Id },
+            value: response
         );
     }
     #endregion
 
     #region PUT
-    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryAsync))]
-    public async Task<ActionResult<Category>> UpdateCategoryAsync(
+    [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryById))]
+    public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryById(
         [FromRoute] int id,
-        [FromBody] Category category,
+        [FromBody] UpdateCategoryRequest updateCategoryRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -108,14 +117,16 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        if (id != category.Id)
+        if (id != updateCategoryRequest.Id)
         {
             ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, category.Id),
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, updateCategoryRequest.Id),
                 modelStateDictionary: ModelState
             );
         }
+
+        var category = updateCategoryRequest.ToEntity();
 
         var currentCategory = await _unit.CategoryRepository.FindByIdAsync(
             key: id,
@@ -127,11 +138,11 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        if (category.Name is not "" && category.Name != currentCategory.Name)
+        if (string.IsNullOrWhiteSpace(category.Name) is not true && category.Name != currentCategory.Name)
         {
             currentCategory.Name = category.Name;
         }
-        if (category.ImageUri is not "" && category.ImageUri != currentCategory.ImageUri)
+        if (string.IsNullOrWhiteSpace(category.ImageUri) is not true && category.ImageUri != currentCategory.ImageUri)
         {
             currentCategory.ImageUri = category.ImageUri;
         }
@@ -142,13 +153,13 @@ public sealed class CategoriesController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return updatedCategory;
+        return updatedCategory.ToUpdateResponse();
     }
     #endregion
 
     #region DELETE
-    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategory))]
-    public async Task<ActionResult<Category>> DeleteCategory(
+    [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategoryById))]
+    public async Task<ActionResult<DeleteCategoryResponse>> DeleteCategoryById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int id,
         CancellationToken cancellationToken = default
@@ -172,10 +183,10 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        return removedCategory;
+        return removedCategory.ToDeleteResponse();
     }
     #endregion
 }
 
-// @todo: (when DTOs are implemented) make all properties except `id` optional for PUT routes
+// @todo: (when DTOs are implemented) make all properties except `id` optional for PATCH routes
 // @todo: Paginated response DTOs for Get actions

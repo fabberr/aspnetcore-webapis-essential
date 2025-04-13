@@ -156,7 +156,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             return null;
         }
 
-        var removedEntity = strategy switch {
+        var removedEntityEntry = strategy switch {
             RemoveStrategy.Delete
                 => _dbSet.Remove(currentEntity),
 
@@ -166,7 +166,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
             _ => throw new NotSupportedException(),
         };
 
-        return removedEntity.Entity;
+        return removedEntityEntry.Entity;
 
         #region Local Functions
         EntityEntry<TEntity> _setAsHiddenAndUpdate(TEntity entity)
