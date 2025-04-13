@@ -35,15 +35,18 @@ public sealed record class GetProductResponse : ProductDto
 #region POST
 public sealed record class CreateProductRequest(
     [Required]
+    [StringLength(80)]
     string Name,
 
     [Required]
+    [StringLength(500)]
     string Description,
 
     [Required]
     decimal Price,
 
     [Required]
+    [StringLength(300)]
     string ImageUri,
 
     [Required]
@@ -81,9 +84,11 @@ public sealed record class UpdateProductRequest(
     int Id,
     
     [Required]
+    [StringLength(80)]
     string Name,
 
     [Required]
+    [StringLength(500)]
     string Description,
 
     [Required]
@@ -93,6 +98,7 @@ public sealed record class UpdateProductRequest(
     float Stock,
 
     [Required]
+    [StringLength(300)]
     string ImageUri,
 
     [Required]

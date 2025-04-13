@@ -28,9 +28,11 @@ public sealed record class GetCategoryResponse : CategoryDto
 #region POST
 public sealed record class CreateCategoryRequest(
     [Required]
+    [StringLength(80)]
     string Name,
 
     [Required]
+    [StringLength(300)]
     string ImageUri
 )
 {
@@ -58,9 +60,11 @@ public sealed record class UpdateCategoryRequest(
     int Id,
 
     [Required]
+    [StringLength(80)]
     string Name,
 
     [Required]
+    [StringLength(300)]
     string ImageUri
 )
 {
