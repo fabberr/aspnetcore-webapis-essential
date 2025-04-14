@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
-using Catalog.Api.Models.DTOs.Categories;
+using Catalog.Api.DTOs.Categories;
 using Catalog.Core.Models.Options;
 using Catalog.Core.Models.Settings;
 using Catalog.Core.Repositories.Abstractions;
@@ -24,7 +24,7 @@ public sealed class CategoriesController(
 
     #region GET
     [HttpGet(Name = nameof(GetCategories))]
-    public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetCategories(
+    public async Task<ActionResult<IEnumerable<ReadResponse>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromQuery] uint? limit = null,
         [FromQuery] uint offset = 0u,
@@ -44,7 +44,7 @@ public sealed class CategoriesController(
             return NoContent();
         }
 
-        var response = categories.ToGetResponse();
+        var response = ReadResponse.FromEntities(categories);
 
         if (response is null or { Length: 0 })
         {
@@ -55,7 +55,7 @@ public sealed class CategoriesController(
     }
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
-    public async Task<ActionResult<GetCategoryResponse>> GetCategoryById(
+    public async Task<ActionResult<ReadResponse>> GetCategoryById(
         [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
@@ -76,24 +76,24 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        return category.ToGetResponse();
+        return ReadResponse.FromEntity(category);
     }
     #endregion
 
     #region POST
     [HttpPost(Name = nameof(CreateCategory))]
-    public async Task<ActionResult<CreateCategoryResponse>> CreateCategory(
-        [FromBody] CreateCategoryRequest createCategoryRequest,
+    public async Task<ActionResult<CreateResponse>> CreateCategory(
+        [FromBody] CreateRequest createRequest,
         CancellationToken cancellationToken = default
     )
     {
         var createdCategory = await _unit.CategoryRepository.CreateAsync(
-            entity: createCategoryRequest.ToEntity(),
+            entity: createRequest.ToEntity(),
             cancellationToken: cancellationToken
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        var response = createdCategory.ToCreateResponse();
+        var response = CreateResponse.FromEntity(createdCategory);
 
         return CreatedAtRoute(
             routeName: nameof(GetCategoryById),
@@ -105,9 +105,9 @@ public sealed class CategoriesController(
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryById))]
-    public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryById(
+    public async Task<ActionResult<UpdateResponse>> UpdateCategoryById(
         [FromRoute] int id,
-        [FromBody] UpdateCategoryRequest updateCategoryRequest,
+        [FromBody] UpdateRequest updateRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -117,16 +117,16 @@ public sealed class CategoriesController(
             return ValidationProblem(ModelState);
         }
 
-        if (id != updateCategoryRequest.Id)
+        if (id != updateRequest.Id)
         {
             ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, updateCategoryRequest.Id),
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, updateRequest.Id),
                 modelStateDictionary: ModelState
             );
         }
 
-        var category = updateCategoryRequest.ToEntity();
+        var category = updateRequest.ToEntity();
 
         var currentCategory = await _unit.CategoryRepository.FindByIdAsync(
             key: id,
@@ -153,13 +153,13 @@ public sealed class CategoriesController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return updatedCategory.ToUpdateResponse();
+        return UpdateResponse.FromEntity(updatedCategory);
     }
     #endregion
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategoryById))]
-    public async Task<ActionResult<DeleteCategoryResponse>> DeleteCategoryById(
+    public async Task<ActionResult<DeleteResponse>> DeleteCategoryById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int id,
         CancellationToken cancellationToken = default
@@ -183,10 +183,13 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        return removedCategory.ToDeleteResponse();
+        return DeleteResponse.FromEntity(removedCategory);
     }
     #endregion
 }
 
-// @todo: (when DTOs are implemented) make all properties except `id` optional for PATCH routes
+// @todo: Make PUT requests idempotent
+// @todo: Create PATCH requests
+//  PATCH /{id}
+//  PATCH /{id}/jsonpatch
 // @todo: Paginated response DTOs for Get actions
