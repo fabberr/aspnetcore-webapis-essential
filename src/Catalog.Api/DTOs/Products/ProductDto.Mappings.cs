@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Catalog.Core.Models.Abstractions;
 using Catalog.Core.Models.Entities;
 
@@ -11,36 +10,26 @@ public sealed partial record ReadResponse
     : IMappableFromEntity<ReadResponse, Product>
     , IMappableFromEntityCollection<ReadResponse, Product>
 {
-    public static ReadResponse FromEntity(Product source)
+    public static ReadResponse FromEntity(Product entity)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(entity);
 
         return new ReadResponse() {
-            Id = source.Id,
-            Name = source.Name,
-            Description = source.Description,
-            Price = source.Price,
-            Stock = source.Stock,
-            ImageUri = source.ImageUri,
-            CreatedAt = source.CreatedAt,
-            UpdatedAt = source.UpdatedAt,
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Price = entity.Price,
+            Stock = entity.Stock,
+            ImageUri = entity.ImageUri,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
         };
     }
 
     public static ReadResponse[]? FromEntities(IEnumerable<Product> sources)
     {
-        ArgumentNullException.ThrowIfNull(sources);
-
-        var convertibleSources = sources.Where(static (source) => source is not null);
-
-        if (convertibleSources.Any() is false)
-        {
-            return null;
-        }
-        
-        return [.. convertibleSources.Select(static (source) => FromEntity(source))];
+        return Mapper.FromEntities<ReadResponse, Product>(sources);
     }
-
 }
 #endregion
 
@@ -64,19 +53,19 @@ public sealed partial record CreateRequest
 public sealed partial record CreateResponse
     : IMappableFromEntity<CreateResponse, Product>
 {
-    public static CreateResponse FromEntity(Product source)
+    public static CreateResponse FromEntity(Product entity)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(entity);
 
         return new CreateResponse() {
-            Id = source.Id,
-            Name = source.Name,
-            Description = source.Description,
-            Price = source.Price,
-            Stock = source.Stock,
-            ImageUri = source.ImageUri,
-            CreatedAt = source.CreatedAt,
-            UpdatedAt = source.UpdatedAt,
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Price = entity.Price,
+            Stock = entity.Stock,
+            ImageUri = entity.ImageUri,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
         };
     }
 }
@@ -103,19 +92,19 @@ public sealed partial record UpdateRequest
 public sealed partial record UpdateResponse
     : IMappableFromEntity<UpdateResponse, Product>
 {
-    public static UpdateResponse FromEntity(Product source)
+    public static UpdateResponse FromEntity(Product entity)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(entity);
 
         return new UpdateResponse() {
-            Id = source.Id,
-            Name = source.Name,
-            Description = source.Description,
-            Price = source.Price,
-            Stock = source.Stock,
-            ImageUri = source.ImageUri,
-            CreatedAt = source.CreatedAt,
-            UpdatedAt = source.UpdatedAt,
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Price = entity.Price,
+            Stock = entity.Stock,
+            ImageUri = entity.ImageUri,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
         };
     }
 }
@@ -125,19 +114,19 @@ public sealed partial record UpdateResponse
 public sealed partial record DeleteResponse
     : IMappableFromEntity<DeleteResponse, Product>
 {
-    public static DeleteResponse FromEntity(Product source)
+    public static DeleteResponse FromEntity(Product entity)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(entity);
         
         return new DeleteResponse() {
-            Id = source.Id,
-            Name = source.Name,
-            Description = source.Description,
-            Price = source.Price,
-            Stock = source.Stock,
-            ImageUri = source.ImageUri,
-            CreatedAt = source.CreatedAt,
-            UpdatedAt = source.UpdatedAt,
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Price = entity.Price,
+            Stock = entity.Stock,
+            ImageUri = entity.ImageUri,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
         };
     }
 }

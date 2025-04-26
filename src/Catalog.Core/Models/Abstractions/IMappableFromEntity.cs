@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Catalog.Core.Models.Entities;
 
 namespace Catalog.Core.Models.Abstractions;
@@ -20,14 +22,14 @@ public interface IMappableFromEntity<TSelf, TEntity>
     /// Creates an instance of <typeparamref name="TSelf"/> from a
     /// <typeparamref name="TEntity"/> entity.
     /// </summary>
-    /// <param name="source">
+    /// <param name="entity">
     /// Entity to create the instance of <typeparamref name="TSelf"/> from.
     /// </param>
     /// <returns>
     /// An instance of <typeparamref name="TSelf"/> created from the
-    /// <paramref name="source"/> instance.
+    /// <paramref name="entity"/> instance.
     /// </returns>
-    abstract static TSelf FromEntity(TEntity source);
+    abstract static TSelf FromEntity(TEntity entity);
 }
 
 /// <summary>
@@ -55,14 +57,37 @@ public interface IMappableFromEntityCollection<TSelf, TEntity>
     /// Elements that point to <see langword="null"/> in the source collection
     /// will be skipped.
     /// </remarks>
-    /// <param name="sources">
-    /// Collection to create an array of <typeparamref name="TSelf"/> instances
-    /// from.
+    /// <param name="entities">
+    /// Collection of entities to create an array of <typeparamref name="TSelf"/>
+    /// instances from.
     /// </param>
     /// <returns>
     /// An array of <typeparamref name="TSelf"/> instances created from the
-    /// <paramref name="sources"/> collection, or <see langword="null"/> if
+    /// <paramref name="entities"/> collection, or <see langword="null"/> if
     /// every element in the collection pointed to <see langword="null"/>.
     /// </returns>
-    abstract static TSelf[]? FromEntities(IEnumerable<TEntity> sources);
+    abstract static TSelf[]? FromEntities(IEnumerable<TEntity> entities);
+}
+
+/// <summary>
+/// Static helper class providing a default implementation for
+/// <see cref="IMappableFromEntityCollection{TSelf, TEntity}.FromEntities(IEnumerable{TEntity})"/>.
+/// </summary>
+public static class Mapper
+{
+    public static TSelf[]? FromEntities<TSelf, TEntity>(IEnumerable<TEntity> entities)
+        where TSelf : IMappableFromEntity<TSelf, TEntity>
+        where TEntity : EntityBase
+    {
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var convertibleEntities = entities.Where(static (entity) => entity is not null);
+
+        if (convertibleEntities.Any() is false)
+        {
+            return null;
+        }
+        
+        return [.. convertibleEntities.Select(static (entity) => TSelf.FromEntity(entity))];
+    }
 }
