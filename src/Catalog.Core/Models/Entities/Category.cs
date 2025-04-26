@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace Catalog.Core.Models.Entities;
 
@@ -10,7 +8,7 @@ namespace Catalog.Core.Models.Entities;
 /// This type cannot be inherited.
 /// </summary>
 [Table("Categories")]
-public sealed class Category : EntityBase
+public sealed partial class Category : EntityBase
 {
     /// <summary>
     /// The name of this category.
@@ -25,12 +23,4 @@ public sealed class Category : EntityBase
     [Required]
     [StringLength(300)]
     public string ImageUri { get; set; } = string.Empty;
-
-    #region Category 1..* Product
-    /// <summary>
-    /// A collection of products belonging to this category.
-    /// </summary>
-    [JsonIgnore]
-    public ICollection<Product>? Products { get; set; } = null;
-    #endregion
 }

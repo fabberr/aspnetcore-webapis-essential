@@ -21,6 +21,29 @@ public sealed class ProductsController(
     private readonly IUnitOfWork _unit = unitOfWork;
     #endregion
 
+    #region POST
+    [HttpPost(Name = nameof(CreateProduct))]
+    public async Task<ActionResult<CreateResponse>> CreateProduct(
+        [FromBody] CreateRequest createProductRequest,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var createdProduct = await _unit.ProductRepository.CreateAsync(
+            entity: createProductRequest.ToEntity(),
+            cancellationToken: cancellationToken
+        );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        var response = CreateResponse.FromEntity(createdProduct);
+
+        return CreatedAtRoute(
+            routeName: nameof(GetProductById),
+            routeValues: new { id = response.Id },
+            value: response
+        );
+    }
+    #endregion
+
     #region GET
     [HttpGet(Name = nameof(GetProducts))]
     public async Task<ActionResult<IEnumerable<ReadResponse>>> GetProducts(
@@ -108,29 +131,6 @@ public sealed class ProductsController(
     }
     #endregion
 
-    #region POST
-    [HttpPost(Name = nameof(CreateProduct))]
-    public async Task<ActionResult<CreateResponse>> CreateProduct(
-        [FromBody] CreateRequest createProductRequest,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var createdProduct = await _unit.ProductRepository.CreateAsync(
-            entity: createProductRequest.ToEntity(),
-            cancellationToken: cancellationToken
-        );
-        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
-
-        var response = CreateResponse.FromEntity(createdProduct);
-
-        return CreatedAtRoute(
-            routeName: nameof(GetProductById),
-            routeValues: new { id = response.Id },
-            value: response
-        );
-    }
-    #endregion
-
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateProductById))]
     public async Task<ActionResult<UpdateResponse>> UpdateProductById(
@@ -166,38 +166,58 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        if (string.IsNullOrWhiteSpace(product.Name) is not true && product.Name != currentProduct.Name)
-        {
-            currentProduct.Name = product.Name;
-        }
-        if (string.IsNullOrWhiteSpace(product.Description) is not true && product.Description != currentProduct.Description)
-        {
-            currentProduct.Description = product.Description;
-        }
-        if (product.Price != default && product.Price != currentProduct.Price)
-        {
-            currentProduct.Price = product.Price;
-        }
-        if (product.Stock != default && product.Stock != currentProduct.Stock)
-        {
-            currentProduct.Stock = product.Stock;
-        }
-        if (string.IsNullOrWhiteSpace(product.ImageUri) is not true && product.ImageUri != currentProduct.ImageUri)
-        {
-            currentProduct.ImageUri = product.ImageUri;
-        }
-        if (product.CategoryId != default && product.CategoryId != currentProduct.CategoryId)
-        {
-            currentProduct.CategoryId = product.CategoryId;
-        }
-
         var updatedProduct = await _unit.ProductRepository.UpdateAsync(
-            entity: currentProduct,
+            entity: currentProduct.OverwriteWith(product),
             cancellationToken: cancellationToken
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
         return UpdateResponse.FromEntity(updatedProduct);
+    }
+    #endregion
+
+    #region PATCH
+    [HttpPatch(template: "{id:int}", Name = nameof(PatchProductById))]
+    public async Task<ActionResult<PatchResponse>> PatchProductById(
+        [FromRoute] int id,
+        [FromBody] PatchRequest patchRequest,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (id <= 0)
+        {
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
+        }
+
+        if (id != patchRequest.Id)
+        {
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, patchRequest.Id),
+                modelStateDictionary: ModelState
+            );
+        }
+
+        var product = patchRequest.ToEntity();
+
+        var currentProduct = await _unit.ProductRepository.FindByIdAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
+
+        if (currentProduct is null)
+        {
+            return NotFound();
+        }
+
+        var updatedProduct = await _unit.ProductRepository.UpdateAsync(
+            entity: currentProduct.MergeWith(product),
+            cancellationToken: cancellationToken
+        );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        return PatchResponse.FromEntity(updatedProduct);
     }
     #endregion
 

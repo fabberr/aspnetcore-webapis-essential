@@ -1,9 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Catalog.Core.Models.Entities;
 
 namespace Catalog.Api.DTOs.Products;
 
-public abstract record class ProductDto(
+public abstract record ProductDto(
     int Id = default,
     string Name = "",
     string Description = "",
@@ -12,11 +13,20 @@ public abstract record class ProductDto(
     string ImageUri = "",
     DateTime CreatedAt = default,
     DateTime? UpdatedAt = default
-);
-
-#region GET
-public sealed partial record ReadResponse : ProductDto;
-#endregion
+)
+{
+    protected ProductDto(Product product) : this (
+        Id: product.Id,
+        Name: product.Name,
+        Description: product.Description,
+        Price: product.Price,
+        Stock: product.Stock,
+        ImageUri: product.ImageUri,
+        CreatedAt: product.CreatedAt,
+        UpdatedAt: product.UpdatedAt
+    )
+    {}
+}
 
 #region POST
 public sealed partial record CreateRequest(
@@ -40,6 +50,10 @@ public sealed partial record CreateRequest(
 );
 
 public sealed partial record CreateResponse : ProductDto;
+#endregion
+
+#region GET
+public sealed partial record ReadResponse : ProductDto;
 #endregion
 
 #region PUT
@@ -70,6 +84,36 @@ public sealed partial record UpdateRequest(
 );
 
 public sealed partial record UpdateResponse : ProductDto;
+#endregion
+
+#region PATCH
+public sealed partial record PatchRequest(
+    [Required]
+    int Id,
+    
+    [StringLength(80)]
+    [DeniedValues("")]
+    string? Name = null,
+
+    [StringLength(500)]
+    [DeniedValues("")]
+    string? Description = null,
+
+    [DeniedValues(0)]
+    decimal? Price = null,
+
+    [DeniedValues(0f)]
+    float? Stock = null,
+
+    [StringLength(300)]
+    [DeniedValues("")]
+    string? ImageUri = null,
+
+    [DeniedValues(0)]
+    int? CategoryId = null
+);
+
+public sealed partial record PatchResponse : ProductDto;
 #endregion
 
 #region DELETE

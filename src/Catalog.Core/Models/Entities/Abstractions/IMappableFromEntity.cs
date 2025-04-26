@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Catalog.Core.Models.Entities;
 
-namespace Catalog.Core.Models.Abstractions;
+namespace Catalog.Core.Models.Entities.Abstractions;
 
 /// <summary>
 /// Defines a static method for creating <typeparamref name="TSelf"/> instances

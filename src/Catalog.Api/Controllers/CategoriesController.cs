@@ -22,6 +22,29 @@ public sealed class CategoriesController(
     private readonly IUnitOfWork _unit = unitOfWork;
     #endregion
 
+    #region POST
+    [HttpPost(Name = nameof(CreateCategory))]
+    public async Task<ActionResult<CreateResponse>> CreateCategory(
+        [FromBody] CreateRequest createRequest,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var createdCategory = await _unit.CategoryRepository.CreateAsync(
+            entity: createRequest.ToEntity(),
+            cancellationToken: cancellationToken
+        );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        var response = CreateResponse.FromEntity(createdCategory);
+
+        return CreatedAtRoute(
+            routeName: nameof(GetCategoryById),
+            routeValues: new { id = response.Id },
+            value: response
+        );
+    }
+    #endregion
+
     #region GET
     [HttpGet(Name = nameof(GetCategories))]
     public async Task<ActionResult<IEnumerable<ReadResponse>>> GetCategories(
@@ -80,29 +103,6 @@ public sealed class CategoriesController(
     }
     #endregion
 
-    #region POST
-    [HttpPost(Name = nameof(CreateCategory))]
-    public async Task<ActionResult<CreateResponse>> CreateCategory(
-        [FromBody] CreateRequest createRequest,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var createdCategory = await _unit.CategoryRepository.CreateAsync(
-            entity: createRequest.ToEntity(),
-            cancellationToken: cancellationToken
-        );
-        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
-
-        var response = CreateResponse.FromEntity(createdCategory);
-
-        return CreatedAtRoute(
-            routeName: nameof(GetCategoryById),
-            routeValues: new { id = response.Id },
-            value: response
-        );
-    }
-    #endregion
-
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryById))]
     public async Task<ActionResult<UpdateResponse>> UpdateCategoryById(
@@ -138,22 +138,58 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        if (string.IsNullOrWhiteSpace(category.Name) is not true && category.Name != currentCategory.Name)
-        {
-            currentCategory.Name = category.Name;
-        }
-        if (string.IsNullOrWhiteSpace(category.ImageUri) is not true && category.ImageUri != currentCategory.ImageUri)
-        {
-            currentCategory.ImageUri = category.ImageUri;
-        }
-
         var updatedCategory = await _unit.CategoryRepository.UpdateAsync(
-            entity: currentCategory,
+            entity: currentCategory.OverwriteWith(category),
             cancellationToken: cancellationToken
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
         return UpdateResponse.FromEntity(updatedCategory);
+    }
+    #endregion
+
+    #region PATCH
+    [HttpPatch(template: "{id:int}", Name = nameof(PatchCategoryById))]
+    public async Task<ActionResult<PatchResponse>> PatchCategoryById(
+        [FromRoute] int id,
+        [FromBody] PatchRequest patchRequest,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (id <= 0)
+        {
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(ModelState);
+        }
+
+        if (id != patchRequest.Id)
+        {
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            return ValidationProblem(
+                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, patchRequest.Id),
+                modelStateDictionary: ModelState
+            );
+        }
+
+        var category = patchRequest.ToEntity();
+
+        var currentCategory = await _unit.CategoryRepository.FindByIdAsync(
+            key: id,
+            cancellationToken: cancellationToken
+        );
+
+        if (currentCategory is null)
+        {
+            return NotFound();
+        }
+
+        var updatedCategory = await _unit.CategoryRepository.UpdateAsync(
+            entity: currentCategory.MergeWith(category),
+            cancellationToken: cancellationToken
+        );
+        await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
+
+        return PatchResponse.FromEntity(updatedCategory);
     }
     #endregion
 
@@ -187,9 +223,3 @@ public sealed class CategoriesController(
     }
     #endregion
 }
-
-// @todo: Make PUT requests idempotent
-// @todo: Create PATCH requests
-//  PATCH /{id}
-//  PATCH /{id}/jsonpatch
-// @todo: Paginated response DTOs for Get actions

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Core.Models.Entities;
@@ -10,7 +9,7 @@ namespace Catalog.Core.Models.Entities;
 /// This type cannot be inherited.
 /// </summary>
 [Table("Products")]
-public sealed class Product : EntityBase
+public sealed partial class Product : EntityBase
 {
     /// <summary>
     /// The name of this product.
@@ -45,17 +44,4 @@ public sealed class Product : EntityBase
     [Required]
     [StringLength(300)]
     public string ImageUri { get; set; } = string.Empty;
-
-    #region Category 1..* Product
-    /// <summary>
-    /// The Id of the category this product belongs to.
-    /// </summary>
-    public int CategoryId { get; set; } = default;
-
-    /// <summary>
-    /// The category this product belongs to.
-    /// </summary>
-    [JsonIgnore]
-    public Category? Category { get; set; } = null;
-    #endregion
 }
