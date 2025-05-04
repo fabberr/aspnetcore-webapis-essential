@@ -96,13 +96,7 @@ public static class ConfigurationExtensions
 
         return appSettings.DatabaseProvider.Default switch {
             DatabaseProvider.Sqlite3 => optionsBuilder.UseSqlite(
-                connectionString: appSettings.ConnectionStrings.SqlDatabase,
-                sqliteOptionsAction: (sqliteOptions) => {
-                    /*
-                     * @todo: Map the rest of these options to AppSettings and forward them here.
-                     * https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.infrastructure.relationaldbcontextoptionsbuilder-2?view=efcore-8.0
-                    */
-                }
+                connectionString: appSettings.ConnectionStrings.SqlDatabase
             ),
 
             _ => throw new NotSupportedException("Invalid database provider."),

@@ -26,8 +26,6 @@ public interface IQueryableRepository<TEntity>
     /// <remarks>
     /// The query enforces a strict ordering by <see cref="EntityBase.Id"/>, in
     /// ascending order.
-    /// <br/>
-    /// @todo: add options for configuring the sorting.
     /// </remarks>
     /// <param name="options">
     /// Options to use for this query.

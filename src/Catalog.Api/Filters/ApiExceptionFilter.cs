@@ -45,8 +45,6 @@ public sealed class ApiExceptionFilter(
             context.Exception
         );
 
-        // @todo: Pipe all logs to redis append-only file asynchronously
-
         context.Result = new ObjectResult(
             _problemDetailsFactory.CreateProblemDetails(
                 httpContext: context.HttpContext,
