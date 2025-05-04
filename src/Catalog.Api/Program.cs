@@ -18,11 +18,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Configuration
 var appSettings = builder.Configuration.ConfigureAppSettings();
+
+builder.Services
+    .Configure<RouteOptions>(options => {
+        options.LowercaseUrls = true;
+        options.LowercaseQueryStrings = true;
+    });
 
 // Locate the `Configure<TOptions>(this IServiceCollection, IConfiguration)` method by its signature.
 var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions).GetMethod(
@@ -50,7 +57,7 @@ foreach (var type in configurationSectionTypes)
 #region Services
 builder.Services
     .AddDbContext<DbContext, CatalogDbContext>(
-        optionsAction: (optionsBuilder) => optionsBuilder
+        optionsAction: (options) => options
             .ConfigureDefaultDatabaseConnection(appSettings),
         contextLifetime: ServiceLifetime.Scoped,
         optionsLifetime: ServiceLifetime.Scoped
@@ -64,8 +71,13 @@ builder.Services
     .AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services
+    .AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
+
+builder.Services.AddOpenApi();
+
+builder.Services
     .AddControllers()
-    .AddJsonOptions((options) => {
+    .AddJsonOptions(options => {
         options.JsonSerializerOptions.AllowTrailingCommas = false;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
         options.JsonSerializerOptions.IncludeFields = false;
@@ -75,19 +87,6 @@ builder.Services
         options.JsonSerializerOptions.ReadCommentHandling = JsonCommentHandling.Disallow;
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
-
-builder.Services
-    .AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
-
-builder.Services
-    .AddEndpointsApiExplorer()
-    .AddSwaggerGen();
-
-builder.Services
-    .Configure<RouteOptions>((options) => {
-        options.LowercaseUrls = true;
-        options.LowercaseQueryStrings = true;
-    });
 #endregion
 
 var app = builder.Build();
@@ -95,8 +94,13 @@ var app = builder.Build();
 #region HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options
+        .WithDarkMode(true)
+        .WithDarkModeToggle(true)
+        .WithTitle("Catalog API Reference")
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+    );
 }
 
 app.UseAuthorization();
