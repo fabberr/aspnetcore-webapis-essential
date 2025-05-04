@@ -99,6 +99,7 @@ if (app.Environment.IsDevelopment())
         .WithDarkMode(true)
         .WithDarkModeToggle(true)
         .WithTitle("Catalog API Reference")
+        .WithFavicon("/favicons/openapi.ico")
         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
     );
 }
@@ -106,6 +107,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.UseValidation();
 app.MapControllers();
+app.UseStaticFiles();
 #endregion
 
 app.Run();
