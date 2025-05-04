@@ -23,7 +23,7 @@ public abstract record CategoryDto(
 }
 
 #region POST
-public sealed partial record CreateRequest(
+public sealed partial record CreateCategoryRequest(
     [Required]
     [StringLength(80)]
     string Name,
@@ -33,15 +33,15 @@ public sealed partial record CreateRequest(
     string ImageUri
 );
 
-public sealed partial record CreateResponse : CategoryDto;
+public sealed partial record CreateCategoryResponse : CategoryDto;
 #endregion
 
 #region GET
-public sealed partial record ReadResponse : CategoryDto;
+public sealed partial record ReadCategoryResponse : CategoryDto;
 #endregion
 
 #region PUT
-public sealed partial record UpdateRequest(
+public sealed partial record UpdateCategoryRequest(
     [Required]
     int Id,
 
@@ -54,11 +54,11 @@ public sealed partial record UpdateRequest(
     string ImageUri
 );
 
-public sealed partial record UpdateResponse : CategoryDto;
+public sealed partial record UpdateCategoryResponse : CategoryDto;
 #endregion
 
 #region PATCH
-public sealed partial record PatchRequest(
+public sealed partial record PatchCategoryRequest(
     [Required]
     int Id,
 
@@ -71,9 +71,9 @@ public sealed partial record PatchRequest(
     string? ImageUri = null
 );
 
-public sealed partial record PatchResponse : CategoryDto;
+public sealed partial record PatchCategoryResponse : CategoryDto;
 #endregion
 
 #region DELETE
-public sealed partial record DeleteResponse : CategoryDto;
+public sealed partial record DeleteCategoryResponse : CategoryDto;
 #endregion

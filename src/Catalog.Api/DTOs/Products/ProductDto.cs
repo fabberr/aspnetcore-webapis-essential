@@ -29,7 +29,7 @@ public abstract record ProductDto(
 }
 
 #region POST
-public sealed partial record CreateRequest(
+public sealed partial record CreateProductRequest(
     [Required]
     [StringLength(80)]
     string Name,
@@ -49,15 +49,15 @@ public sealed partial record CreateRequest(
     int CategoryId
 );
 
-public sealed partial record CreateResponse : ProductDto;
+public sealed partial record CreateProductResponse : ProductDto;
 #endregion
 
 #region GET
-public sealed partial record ReadResponse : ProductDto;
+public sealed partial record ReadProductResponse : ProductDto;
 #endregion
 
 #region PUT
-public sealed partial record UpdateRequest(
+public sealed partial record UpdateProductRequest(
     [Required]
     int Id,
     
@@ -83,11 +83,11 @@ public sealed partial record UpdateRequest(
     int CategoryId
 );
 
-public sealed partial record UpdateResponse : ProductDto;
+public sealed partial record UpdateProductResponse : ProductDto;
 #endregion
 
 #region PATCH
-public sealed partial record PatchRequest(
+public sealed partial record PatchProductRequest(
     [Required]
     int Id,
     
@@ -113,9 +113,9 @@ public sealed partial record PatchRequest(
     int? CategoryId = null
 );
 
-public sealed partial record PatchResponse : ProductDto;
+public sealed partial record PatchProductResponse : ProductDto;
 #endregion
 
 #region DELETE
-public sealed partial record DeleteResponse : ProductDto;
+public sealed partial record DeleteProductResponse : ProductDto;
 #endregion

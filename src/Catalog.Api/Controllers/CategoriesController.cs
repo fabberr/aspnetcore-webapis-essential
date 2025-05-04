@@ -24,8 +24,8 @@ public sealed class CategoriesController(
 
     #region POST
     [HttpPost(Name = nameof(CreateCategory))]
-    public async Task<ActionResult<CreateResponse>> CreateCategory(
-        [FromBody] CreateRequest createRequest,
+    public async Task<ActionResult<CreateCategoryResponse>> CreateCategory(
+        [FromBody] CreateCategoryRequest createRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -35,7 +35,7 @@ public sealed class CategoriesController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        var response = CreateResponse.FromEntity(createdCategory);
+        var response = CreateCategoryResponse.FromEntity(createdCategory);
 
         return CreatedAtRoute(
             routeName: nameof(GetCategoryById),
@@ -47,7 +47,7 @@ public sealed class CategoriesController(
 
     #region GET
     [HttpGet(Name = nameof(GetCategories))]
-    public async Task<ActionResult<IEnumerable<ReadResponse>>> GetCategories(
+    public async Task<ActionResult<IEnumerable<ReadCategoryResponse>>> GetCategories(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromQuery] uint? limit = null,
         [FromQuery] uint offset = 0u,
@@ -67,7 +67,7 @@ public sealed class CategoriesController(
             return NoContent();
         }
 
-        var response = ReadResponse.FromEntities(categories);
+        var response = ReadCategoryResponse.FromEntities(categories);
 
         if (response is null or { Length: 0 })
         {
@@ -78,7 +78,7 @@ public sealed class CategoriesController(
     }
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
-    public async Task<ActionResult<ReadResponse>> GetCategoryById(
+    public async Task<ActionResult<ReadCategoryResponse>> GetCategoryById(
         [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
@@ -99,15 +99,15 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        return ReadResponse.FromEntity(category);
+        return ReadCategoryResponse.FromEntity(category);
     }
     #endregion
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryById))]
-    public async Task<ActionResult<UpdateResponse>> UpdateCategoryById(
+    public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryById(
         [FromRoute] int id,
-        [FromBody] UpdateRequest updateRequest,
+        [FromBody] UpdateCategoryRequest updateRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -144,15 +144,15 @@ public sealed class CategoriesController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return UpdateResponse.FromEntity(updatedCategory);
+        return UpdateCategoryResponse.FromEntity(updatedCategory);
     }
     #endregion
 
     #region PATCH
     [HttpPatch(template: "{id:int}", Name = nameof(PatchCategoryById))]
-    public async Task<ActionResult<PatchResponse>> PatchCategoryById(
+    public async Task<ActionResult<PatchCategoryResponse>> PatchCategoryById(
         [FromRoute] int id,
-        [FromBody] PatchRequest patchRequest,
+        [FromBody] PatchCategoryRequest patchRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -189,13 +189,13 @@ public sealed class CategoriesController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return PatchResponse.FromEntity(updatedCategory);
+        return PatchCategoryResponse.FromEntity(updatedCategory);
     }
     #endregion
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategoryById))]
-    public async Task<ActionResult<DeleteResponse>> DeleteCategoryById(
+    public async Task<ActionResult<DeleteCategoryResponse>> DeleteCategoryById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int id,
         CancellationToken cancellationToken = default
@@ -219,7 +219,7 @@ public sealed class CategoriesController(
             return NotFound();
         }
 
-        return DeleteResponse.FromEntity(removedCategory);
+        return DeleteCategoryResponse.FromEntity(removedCategory);
     }
     #endregion
 }

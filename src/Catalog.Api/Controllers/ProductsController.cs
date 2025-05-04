@@ -23,8 +23,8 @@ public sealed class ProductsController(
 
     #region POST
     [HttpPost(Name = nameof(CreateProduct))]
-    public async Task<ActionResult<CreateResponse>> CreateProduct(
-        [FromBody] CreateRequest createProductRequest,
+    public async Task<ActionResult<CreateProductResponse>> CreateProduct(
+        [FromBody] CreateProductRequest createProductRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -34,7 +34,7 @@ public sealed class ProductsController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        var response = CreateResponse.FromEntity(createdProduct);
+        var response = CreateProductResponse.FromEntity(createdProduct);
 
         return CreatedAtRoute(
             routeName: nameof(GetProductById),
@@ -46,7 +46,7 @@ public sealed class ProductsController(
 
     #region GET
     [HttpGet(Name = nameof(GetProducts))]
-    public async Task<ActionResult<IEnumerable<ReadResponse>>> GetProducts(
+    public async Task<ActionResult<IEnumerable<ReadProductResponse>>> GetProducts(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromQuery] uint? limit = null,
         [FromQuery] uint offset = 0u,
@@ -61,7 +61,7 @@ public sealed class ProductsController(
             cancellationToken: cancellationToken
         );
         
-        var response = ReadResponse.FromEntities(products);
+        var response = ReadProductResponse.FromEntities(products);
 
         if (response is null or { Length: 0 })
         {
@@ -72,7 +72,7 @@ public sealed class ProductsController(
     }
 
     [HttpGet(template: "category/{categoryId:int}", Name = nameof(GetProductsByCategoryId))]
-    public async Task<ActionResult<IEnumerable<ReadResponse>>> GetProductsByCategoryId(
+    public async Task<ActionResult<IEnumerable<ReadProductResponse>>> GetProductsByCategoryId(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int categoryId,
         [FromQuery] uint? limit = null,
@@ -95,7 +95,7 @@ public sealed class ProductsController(
             cancellationToken: cancellationToken
         );
 
-        var response = ReadResponse.FromEntities(products);
+        var response = ReadProductResponse.FromEntities(products);
 
         if (response is null or { Length: 0 })
         {
@@ -106,7 +106,7 @@ public sealed class ProductsController(
     }
 
     [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
-    public async Task<ActionResult<ReadResponse>> GetProductById(
+    public async Task<ActionResult<ReadProductResponse>> GetProductById(
         [FromRoute] int id,
         CancellationToken cancellationToken = default
     )
@@ -127,15 +127,15 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        return ReadResponse.FromEntity(product);
+        return ReadProductResponse.FromEntity(product);
     }
     #endregion
 
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateProductById))]
-    public async Task<ActionResult<UpdateResponse>> UpdateProductById(
+    public async Task<ActionResult<UpdateProductResponse>> UpdateProductById(
         [FromRoute] int id,
-        [FromBody] UpdateRequest updateProductRequest,
+        [FromBody] UpdateProductRequest updateProductRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -172,15 +172,15 @@ public sealed class ProductsController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return UpdateResponse.FromEntity(updatedProduct);
+        return UpdateProductResponse.FromEntity(updatedProduct);
     }
     #endregion
 
     #region PATCH
     [HttpPatch(template: "{id:int}", Name = nameof(PatchProductById))]
-    public async Task<ActionResult<PatchResponse>> PatchProductById(
+    public async Task<ActionResult<PatchProductResponse>> PatchProductById(
         [FromRoute] int id,
-        [FromBody] PatchRequest patchRequest,
+        [FromBody] PatchProductRequest patchRequest,
         CancellationToken cancellationToken = default
     )
     {
@@ -217,13 +217,13 @@ public sealed class ProductsController(
         );
         await _unit.CommitChangesAsync(cancellationToken: cancellationToken);
 
-        return PatchResponse.FromEntity(updatedProduct);
+        return PatchProductResponse.FromEntity(updatedProduct);
     }
     #endregion
 
     #region DELETE
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductById))]
-    public async Task<ActionResult<DeleteResponse>> DeleteProductById(
+    public async Task<ActionResult<DeleteProductResponse>> DeleteProductById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
         [FromRoute] int id,
         CancellationToken cancellationToken = default
@@ -247,7 +247,7 @@ public sealed class ProductsController(
             return NotFound();
         }
 
-        return DeleteResponse.FromEntity(removedProduct);
+        return DeleteProductResponse.FromEntity(removedProduct);
     }
     #endregion
 }

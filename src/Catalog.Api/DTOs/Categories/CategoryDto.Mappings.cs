@@ -5,7 +5,7 @@ using Catalog.Core.Models.Entities.Abstractions;
 namespace Catalog.Api.DTOs.Categories;
 
 #region POST
-public sealed partial record CreateRequest : IMappableToEntity<Category>
+public sealed partial record CreateCategoryRequest : IMappableToEntity<Category>
 {
     public Category ToEntity() => new() {
         Name = Name,
@@ -13,29 +13,29 @@ public sealed partial record CreateRequest : IMappableToEntity<Category>
     };
 }
 
-public sealed partial record CreateResponse : IMappableFromEntity<CreateResponse, Category>
+public sealed partial record CreateCategoryResponse : IMappableFromEntity<CreateCategoryResponse, Category>
 {
-    private CreateResponse(Category category) : base(category) {}
+    private CreateCategoryResponse(Category category) : base(category) {}
 
-    public static CreateResponse FromEntity(Category entity) => new(entity);
+    public static CreateCategoryResponse FromEntity(Category entity) => new(entity);
 }
 #endregion
 
 #region GET
-public sealed partial record ReadResponse
-    : IMappableFromEntity<ReadResponse, Category>
-    , IMappableFromEntityCollection<ReadResponse, Category>
+public sealed partial record ReadCategoryResponse
+    : IMappableFromEntity<ReadCategoryResponse, Category>
+    , IMappableFromEntityCollection<ReadCategoryResponse, Category>
 {
-    private ReadResponse(Category category) : base(category) {}
+    private ReadCategoryResponse(Category category) : base(category) {}
 
-    public static ReadResponse FromEntity(Category entity) => new(entity);
+    public static ReadCategoryResponse FromEntity(Category entity) => new(entity);
 
-    public static ReadResponse[]? FromEntities(IEnumerable<Category> sources) => Mapper.FromEntities<ReadResponse, Category>(sources);
+    public static ReadCategoryResponse[]? FromEntities(IEnumerable<Category> sources) => Mapper.FromEntities<ReadCategoryResponse, Category>(sources);
 }
 #endregion
 
 #region PUT
-public sealed partial record UpdateRequest : IMappableToEntity<Category>
+public sealed partial record UpdateCategoryRequest : IMappableToEntity<Category>
 {
     public Category ToEntity() => new() {
         Id = Id,
@@ -44,16 +44,16 @@ public sealed partial record UpdateRequest : IMappableToEntity<Category>
     };
 }
 
-public sealed partial record UpdateResponse : IMappableFromEntity<UpdateResponse, Category>
+public sealed partial record UpdateCategoryResponse : IMappableFromEntity<UpdateCategoryResponse, Category>
 {
-    private UpdateResponse(Category category) : base(category) {}
+    private UpdateCategoryResponse(Category category) : base(category) {}
 
-    public static UpdateResponse FromEntity(Category entity) => new(entity);
+    public static UpdateCategoryResponse FromEntity(Category entity) => new(entity);
 }
 #endregion
 
 #region PATCH
-public sealed partial record PatchRequest : IMappableToEntity<Category>
+public sealed partial record PatchCategoryRequest : IMappableToEntity<Category>
 {
     public Category ToEntity() => new() {
         Id = Id,
@@ -62,19 +62,19 @@ public sealed partial record PatchRequest : IMappableToEntity<Category>
     };
 }
 
-public sealed partial record PatchResponse : IMappableFromEntity<PatchResponse, Category>
+public sealed partial record PatchCategoryResponse : IMappableFromEntity<PatchCategoryResponse, Category>
 {
-    private PatchResponse(Category category) : base(category) {}
+    private PatchCategoryResponse(Category category) : base(category) {}
 
-    public static PatchResponse FromEntity(Category entity) => new(entity);
+    public static PatchCategoryResponse FromEntity(Category entity) => new(entity);
 }
 #endregion
 
 #region DELETE
-public sealed partial record DeleteResponse : IMappableFromEntity<DeleteResponse, Category>
+public sealed partial record DeleteCategoryResponse : IMappableFromEntity<DeleteCategoryResponse, Category>
 {
-    private DeleteResponse(Category category) : base(category) {}
+    private DeleteCategoryResponse(Category category) : base(category) {}
 
-    public static DeleteResponse FromEntity(Category entity) => new(entity);
+    public static DeleteCategoryResponse FromEntity(Category entity) => new(entity);
 }
 #endregion

@@ -5,7 +5,7 @@ using Catalog.Core.Models.Entities.Abstractions;
 namespace Catalog.Api.DTOs.Products;
 
 #region POST
-public sealed partial record CreateRequest : IMappableToEntity<Product>
+public sealed partial record CreateProductRequest : IMappableToEntity<Product>
 {
     public Product ToEntity() => new() {
         Name = this.Name,
@@ -17,29 +17,29 @@ public sealed partial record CreateRequest : IMappableToEntity<Product>
     };
 }
 
-public sealed partial record CreateResponse : IMappableFromEntity<CreateResponse, Product>
+public sealed partial record CreateProductResponse : IMappableFromEntity<CreateProductResponse, Product>
 {
-    private CreateResponse(Product product) : base(product) {}
+    private CreateProductResponse(Product product) : base(product) {}
 
-    public static CreateResponse FromEntity(Product entity) => new(entity);
+    public static CreateProductResponse FromEntity(Product entity) => new(entity);
 }
 #endregion
 
 #region GET
-public sealed partial record ReadResponse
-    : IMappableFromEntity<ReadResponse, Product>
-    , IMappableFromEntityCollection<ReadResponse, Product>
+public sealed partial record ReadProductResponse
+    : IMappableFromEntity<ReadProductResponse, Product>
+    , IMappableFromEntityCollection<ReadProductResponse, Product>
 {
-    private ReadResponse(Product product) : base(product) {}
+    private ReadProductResponse(Product product) : base(product) {}
 
-    public static ReadResponse FromEntity(Product entity) => new(entity);
+    public static ReadProductResponse FromEntity(Product entity) => new(entity);
 
-    public static ReadResponse[]? FromEntities(IEnumerable<Product> sources) => Mapper.FromEntities<ReadResponse, Product>(sources);
+    public static ReadProductResponse[]? FromEntities(IEnumerable<Product> sources) => Mapper.FromEntities<ReadProductResponse, Product>(sources);
 }
 #endregion
 
 #region PUT
-public sealed partial record UpdateRequest : IMappableToEntity<Product>
+public sealed partial record UpdateProductRequest : IMappableToEntity<Product>
 {
     public Product ToEntity() => new() {
         Id = this.Id,
@@ -52,16 +52,16 @@ public sealed partial record UpdateRequest : IMappableToEntity<Product>
     };
 }
 
-public sealed partial record UpdateResponse : IMappableFromEntity<UpdateResponse, Product>
+public sealed partial record UpdateProductResponse : IMappableFromEntity<UpdateProductResponse, Product>
 {
-    private UpdateResponse(Product product) : base(product) {}
+    private UpdateProductResponse(Product product) : base(product) {}
 
-    public static UpdateResponse FromEntity(Product entity) => new(entity);
+    public static UpdateProductResponse FromEntity(Product entity) => new(entity);
 }
 #endregion
 
 #region PATCH
-public sealed partial record PatchRequest : IMappableToEntity<Product>
+public sealed partial record PatchProductRequest : IMappableToEntity<Product>
 {
     public Product ToEntity() => new() {
         Id = Id,
@@ -74,19 +74,19 @@ public sealed partial record PatchRequest : IMappableToEntity<Product>
     };
 }
 
-public sealed partial record PatchResponse : IMappableFromEntity<PatchResponse, Product>
+public sealed partial record PatchProductResponse : IMappableFromEntity<PatchProductResponse, Product>
 {
-    private PatchResponse(Product product) : base(product) {}
+    private PatchProductResponse(Product product) : base(product) {}
 
-    public static PatchResponse FromEntity(Product entity) => new(entity);
+    public static PatchProductResponse FromEntity(Product entity) => new(entity);
 }
 #endregion
 
 #region DELETE
-public sealed partial record DeleteResponse : IMappableFromEntity<DeleteResponse, Product>
+public sealed partial record DeleteProductResponse : IMappableFromEntity<DeleteProductResponse, Product>
 {
-    private DeleteResponse(Product product) : base(product) {}
+    private DeleteProductResponse(Product product) : base(product) {}
 
-    public static DeleteResponse FromEntity(Product entity) => new(entity);
+    public static DeleteProductResponse FromEntity(Product entity) => new(entity);
 }
 #endregion
