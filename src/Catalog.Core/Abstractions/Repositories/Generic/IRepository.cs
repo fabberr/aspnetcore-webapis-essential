@@ -1,6 +1,6 @@
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Core.Repositories.Abstractions.Generic;
+namespace Catalog.Core.Abstractions.Repositories.Generic;
 
 /// <summary>
 /// A repository capbale of both querying and modifying data from entities of

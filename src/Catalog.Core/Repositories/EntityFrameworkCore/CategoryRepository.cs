@@ -1,5 +1,5 @@
+using Catalog.Core.Abstractions.Repositories;
 using Catalog.Core.Models.Entities;
-using Catalog.Core.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Core.Repositories.EntityFrameworkCore;

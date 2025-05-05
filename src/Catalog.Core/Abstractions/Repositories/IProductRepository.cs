@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Catalog.Core.Abstractions.Repositories.Generic;
 using Catalog.Core.Models.Entities;
-using Catalog.Core.Models.Options;
-using Catalog.Core.Repositories.Abstractions.Generic;
+using Catalog.Core.Repositories;
 
-namespace Catalog.Core.Repositories.Abstractions;
+namespace Catalog.Core.Abstractions.Repositories;
 
 /// <inheritdoc/>
 public interface IProductRepository : IRepository<Product>

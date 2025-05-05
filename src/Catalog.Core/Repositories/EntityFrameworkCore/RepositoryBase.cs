@@ -4,10 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Catalog.Core.Abstractions.Repositories.Generic;
 using Catalog.Core.Enums;
 using Catalog.Core.Models.Entities;
-using Catalog.Core.Models.Options;
-using Catalog.Core.Repositories.Abstractions.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 

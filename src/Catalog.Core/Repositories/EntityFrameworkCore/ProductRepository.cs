@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Catalog.Core.Abstractions.Repositories;
 using Catalog.Core.Models.Entities;
-using Catalog.Core.Models.Options;
-using Catalog.Core.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Core.Repositories.EntityFrameworkCore;

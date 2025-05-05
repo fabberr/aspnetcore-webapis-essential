@@ -1,6 +1,4 @@
-namespace Catalog.Core.Models.Abstractions;
-
-public interface IReadOnly<TModel>;
+namespace Catalog.Core.Abstractions;
 
 /// <summary>
 /// Defines a method for merging two models.

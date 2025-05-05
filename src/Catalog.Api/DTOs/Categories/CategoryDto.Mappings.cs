@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Catalog.Core.Abstractions.Mapping;
 using Catalog.Core.Models.Entities;
-using Catalog.Core.Models.Entities.Abstractions;
 
 namespace Catalog.Api.DTOs.Categories;
 

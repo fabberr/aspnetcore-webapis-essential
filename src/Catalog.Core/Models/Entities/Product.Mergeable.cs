@@ -1,5 +1,5 @@
 using System;
-using Catalog.Core.Models.Abstractions;
+using Catalog.Core.Abstractions;
 
 namespace Catalog.Core.Models.Entities;
 

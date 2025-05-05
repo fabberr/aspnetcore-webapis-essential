@@ -1,6 +1,6 @@
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Core.Models.Options;
+namespace Catalog.Core.Repositories;
 
 /// <summary>
 /// Represents a set of options for querying entities from the data source.

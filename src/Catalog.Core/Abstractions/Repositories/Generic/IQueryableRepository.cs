@@ -5,9 +5,9 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Core.Models.Entities;
-using Catalog.Core.Models.Options;
+using Catalog.Core.Repositories;
 
-namespace Catalog.Core.Repositories.Abstractions.Generic;
+namespace Catalog.Core.Abstractions.Repositories.Generic;
 
 /// <summary>
 /// A repository capable of querying data from entities of type

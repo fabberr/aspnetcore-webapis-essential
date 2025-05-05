@@ -1,4 +1,6 @@
-namespace Catalog.Core.Models.Entities.Abstractions;
+using Catalog.Core.Models.Entities;
+
+namespace Catalog.Core.Abstractions.Mapping;
 
 /// <summary>
 /// Defines a method for creating <typeparamref name="TEntity"/> instances from
