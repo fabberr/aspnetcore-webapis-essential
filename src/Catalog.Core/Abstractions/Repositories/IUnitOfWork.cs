@@ -1,8 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Catalog.Core.Abstractions.Repositories;
 
-namespace Catalog.Core.Abstractions;
+namespace Catalog.Core.Abstractions.Repositories;
 
 /// <summary>
 /// Represents a Unit of Work responsible for managing changes across multiple
