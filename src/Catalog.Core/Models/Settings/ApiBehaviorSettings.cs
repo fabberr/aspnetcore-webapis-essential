@@ -12,12 +12,12 @@ public sealed class ApiBehaviorSettings
     /// <summary>
     /// The maximum number of items to return for paginated requests.
     /// </summary>
-    public uint MaxItemsPerPage { get; init; } = default;
+    public uint MaxPageSize { get; init; } = default;
 
     /// <summary>
     /// The default number of items to return for paginated requests.
     /// </summary>
-    public uint DefaultItemsPerPage { get; init; } = default;
+    public uint DefaultPageSize { get; init; } = default;
 
     /// <summary>
     /// Which strategy to use when removing entitites through API requests.

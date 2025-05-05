@@ -55,7 +55,7 @@ public sealed class ProductsController(
     {
         var products = await _unit.ProductRepository.QueryMultipleAsync(
             configureOptions: () => new PaginatedQueryOptions(
-                Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
+                Limit: (int)(limit ?? options.Value.DefaultPageSize),
                 Offset: (int)offset
             ),
             cancellationToken: cancellationToken
@@ -89,7 +89,7 @@ public sealed class ProductsController(
         var products = await _unit.ProductRepository.QueryMultipleByCategoryIdAsync(
             categoryKey: categoryId,
             configureOptions: () => new PaginatedQueryOptions(
-                Limit: (int)(limit ?? options.Value.DefaultItemsPerPage),
+                Limit: (int)(limit ?? options.Value.DefaultPageSize),
                 Offset: (int)offset
             ),
             cancellationToken: cancellationToken
