@@ -105,7 +105,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-app.UseValidation();
 app.MapControllers();
 app.UseStaticFiles();
 #endregion
