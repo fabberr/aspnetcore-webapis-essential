@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Api.DTOs.Categories;
 using Catalog.Core.Abstractions.Repositories;
-using Catalog.Core.Models.Options;
 using Catalog.Core.Models.Settings;
+using Catalog.Core.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
