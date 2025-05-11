@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
 using Catalog.Api.Extensions;
+using Catalog.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -37,20 +38,39 @@ public sealed class ApiExceptionFilter(
     /// <inheritdoc/>
     public Task OnExceptionAsync(ExceptionContext context)
     {
-        var actionName = context.ActionDescriptor.AttributeRouteInfo?.Name ?? context.ActionDescriptor.DisplayName;
-        _logger.LogError(
+        var logLevel = LogLevel.Error;
+
+        if (context.Exception is ModelValidationException validationException)
+        {
+            // Do not log instances of `ValidationException` as errors.
+            logLevel = LogLevel.None;
+
+            validationException.ModelState.CopyTo(context.ModelState);
+        }
+
+        _logger.Log(
+            logLevel: logLevel,
             message: Messages.Logging.Error.UnhandledExceptionThrownWhileExecutingAction,
-            DateTime.UtcNow, actionName,
+            DateTime.UtcNow, context.ActionDescriptor.AttributeRouteInfo?.Name ?? context.ActionDescriptor.DisplayName,
             context.HttpContext.Request.GetFormattedRouteWithQuery(),
             context.Exception
         );
 
-        context.Result = new ObjectResult(
-            _problemDetailsFactory.CreateProblemDetails(
+        var problemDetails = context.Exception switch
+        {
+            ModelValidationException => _problemDetailsFactory.CreateValidationProblemDetails(
+                httpContext: context.HttpContext,
+                modelStateDictionary: context.ModelState,
+                statusCode: StatusCodes.Status400BadRequest
+            ),
+
+            _ => _problemDetailsFactory.CreateProblemDetails(
                 httpContext: context.HttpContext,
                 statusCode: StatusCodes.Status500InternalServerError
             )
-        );
+        };
+
+        context.Result = new ObjectResult(problemDetails);
 
         return Task.CompletedTask;
     }

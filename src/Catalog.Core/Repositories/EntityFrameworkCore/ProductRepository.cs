@@ -31,7 +31,7 @@ public sealed class ProductRepository(
         CancellationToken cancellationToken = default
     )
     {
-        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
 
         var query = _dbSet.AsNoTracking()
             .Join(
@@ -41,19 +41,20 @@ public sealed class ProductRepository(
                 resultSelector: (Product, Category) => new { Product, Category }
             )
             .Where(joined => (
-                joined.Category.Id == key
-                && !joined.Product.Hidden
-                && !joined.Category.Hidden
+                key == joined.Category.Id &&
+                !joined.Product.Hidden &&
+                !joined.Category.Hidden
             ))
-            .Select(joined => joined.Product)
-            .OrderBy(product => product.Id);
+            .Select(joined => joined.Product);
 
-        if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
+        if (options.Pagination is not null)
         {
-            query = query.Skip(paginationOptions.Offset).Take(paginationOptions.Limit)
-                as IOrderedQueryable<Product>;
+            return query.OrderBy(entity => entity.Id)
+                .Skip((options.Pagination.PageNumber - 1) * options.Pagination.PageSize)
+                .Take(options.Pagination.PageSize);
         }
 
-        return await query!.ToArrayAsync(cancellationToken);
+        return await query.OrderBy(product => product.Id)
+            .ToArrayAsync(cancellationToken: cancellationToken);
     }
 }

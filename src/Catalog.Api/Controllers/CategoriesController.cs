@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Catalog.Api.Constants;
+using Catalog.Api.DTOs;
 using Catalog.Api.DTOs.Categories;
 using Catalog.Core.Abstractions.Repositories;
 using Catalog.Core.Models.Settings;
@@ -25,7 +26,9 @@ public sealed class CategoriesController(
     #region POST
     [HttpPost(Name = nameof(CreateCategory))]
     public async Task<ActionResult<CreateCategoryResponse>> CreateCategory(
-        [FromBody] CreateCategoryRequest createRequest,
+        [FromBody]
+        CreateCategoryRequest createRequest,
+
         CancellationToken cancellationToken = default
     )
     {
@@ -48,17 +51,14 @@ public sealed class CategoriesController(
     #region GET
     [HttpGet(Name = nameof(GetCategories))]
     public async Task<ActionResult<IEnumerable<ReadCategoryResponse>>> GetCategories(
-        IOptionsSnapshot<ApiBehaviorSettings> options,
-        [FromQuery] uint? limit = null,
-        [FromQuery] uint offset = 0u,
+        [FromQuery]
+        PaginationQueryParameters parameters,
+
         CancellationToken cancellationToken = default
     )
     {
         var categories = await _unit.CategoryRepository.QueryMultipleAsync(
-            configureOptions: () => new PaginatedQueryOptions(
-                Limit: (int)(limit ?? options.Value.DefaultPageSize),
-                Offset: (int)offset
-            ),
+            configureOptions: () => new QueryOptions(parameters),
             cancellationToken: cancellationToken
         );
 
@@ -79,16 +79,13 @@ public sealed class CategoriesController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetCategoryById))]
     public async Task<ActionResult<ReadCategoryResponse>> GetCategoryById(
-        [FromRoute] int id,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
         var category = await _unit.CategoryRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
@@ -106,26 +103,14 @@ public sealed class CategoriesController(
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateCategoryById))]
     public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryById(
-        [FromRoute] int id,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
         [FromBody] UpdateCategoryRequest updateRequest,
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
-        if (id != updateRequest.Id)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, updateRequest.Id),
-                modelStateDictionary: ModelState
-            );
-        }
-
         var category = updateRequest.ToEntity();
 
         var currentCategory = await _unit.CategoryRepository.FindByIdAsync(
@@ -151,26 +136,14 @@ public sealed class CategoriesController(
     #region PATCH
     [HttpPatch(template: "{id:int}", Name = nameof(PatchCategoryById))]
     public async Task<ActionResult<PatchCategoryResponse>> PatchCategoryById(
-        [FromRoute] int id,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
         [FromBody] PatchCategoryRequest patchRequest,
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
-        if (id != patchRequest.Id)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, patchRequest.Id),
-                modelStateDictionary: ModelState
-            );
-        }
-
         var category = patchRequest.ToEntity();
 
         var currentCategory = await _unit.CategoryRepository.FindByIdAsync(
@@ -197,16 +170,13 @@ public sealed class CategoriesController(
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteCategoryById))]
     public async Task<ActionResult<DeleteCategoryResponse>> DeleteCategoryById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        [FromRoute] int id,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
         var removedCategory = await _unit.CategoryRepository.RemoveByIdAsync(
             key: id,
             strategy: options.Value.RemoveStrategy,

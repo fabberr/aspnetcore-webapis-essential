@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.Constants;
+using Catalog.Api.DTOs;
 using Catalog.Api.DTOs.Products;
 using Catalog.Core.Abstractions.Repositories;
 using Catalog.Core.Models.Settings;
@@ -24,7 +26,9 @@ public sealed class ProductsController(
     #region POST
     [HttpPost(Name = nameof(CreateProduct))]
     public async Task<ActionResult<CreateProductResponse>> CreateProduct(
-        [FromBody] CreateProductRequest createProductRequest,
+        [FromBody]
+        CreateProductRequest createProductRequest,
+
         CancellationToken cancellationToken = default
     )
     {
@@ -47,17 +51,14 @@ public sealed class ProductsController(
     #region GET
     [HttpGet(Name = nameof(GetProducts))]
     public async Task<ActionResult<IEnumerable<ReadProductResponse>>> GetProducts(
-        IOptionsSnapshot<ApiBehaviorSettings> options,
-        [FromQuery] uint? limit = null,
-        [FromQuery] uint offset = 0u,
+        [FromQuery]
+        PaginationQueryParameters parameters,
+
         CancellationToken cancellationToken = default
     )
     {
         var products = await _unit.ProductRepository.QueryMultipleAsync(
-            configureOptions: () => new PaginatedQueryOptions(
-                Limit: (int)(limit ?? options.Value.DefaultPageSize),
-                Offset: (int)offset
-            ),
+            configureOptions: () => new QueryOptions(parameters),
             cancellationToken: cancellationToken
         );
         
@@ -73,25 +74,19 @@ public sealed class ProductsController(
 
     [HttpGet(template: "category/{categoryId:int}", Name = nameof(GetProductsByCategoryId))]
     public async Task<ActionResult<IEnumerable<ReadProductResponse>>> GetProductsByCategoryId(
-        IOptionsSnapshot<ApiBehaviorSettings> options,
-        [FromRoute] int categoryId,
-        [FromQuery] uint? limit = null,
-        [FromQuery] uint offset = 0u,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int categoryId,
+
+        [FromQuery]
+        PaginationQueryParameters parameters,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (categoryId <= 0)
-        {
-            ModelState.TryAddModelError(nameof(categoryId), string.Format(Messages.Validation.InvalidValue, categoryId));
-            return ValidationProblem(ModelState);
-        }
-
         var products = await _unit.ProductRepository.QueryMultipleByCategoryIdAsync(
             categoryKey: categoryId,
-            configureOptions: () => new PaginatedQueryOptions(
-                Limit: (int)(limit ?? options.Value.DefaultPageSize),
-                Offset: (int)offset
-            ),
+            configureOptions: () => new QueryOptions(parameters),
             cancellationToken: cancellationToken
         );
 
@@ -107,16 +102,13 @@ public sealed class ProductsController(
 
     [HttpGet(template: "{id:int}", Name = nameof(GetProductById))]
     public async Task<ActionResult<ReadProductResponse>> GetProductById(
-        [FromRoute] int id,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
         var product = await _unit.ProductRepository.FindByIdAsync(
             key: id,
             cancellationToken: cancellationToken
@@ -134,22 +126,21 @@ public sealed class ProductsController(
     #region PUT
     [HttpPut(template: "{id:int}", Name = nameof(UpdateProductById))]
     public async Task<ActionResult<UpdateProductResponse>> UpdateProductById(
-        [FromRoute] int id,
-        [FromBody] UpdateProductRequest updateProductRequest,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
+        [FromBody]
+        UpdateProductRequest updateProductRequest,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
         if (id != updateProductRequest.Id)
         {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.KeyDoesNotMatchEntityKey, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, updateProductRequest.Id),
+                detail: string.Format(Messages.Validation.KeyDoesNotMatchEntityKey, id, updateProductRequest.Id),
                 modelStateDictionary: ModelState
             );
         }
@@ -179,22 +170,21 @@ public sealed class ProductsController(
     #region PATCH
     [HttpPatch(template: "{id:int}", Name = nameof(PatchProductById))]
     public async Task<ActionResult<PatchProductResponse>> PatchProductById(
-        [FromRoute] int id,
-        [FromBody] PatchProductRequest patchRequest,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
+        [FromBody]
+        PatchProductRequest patchRequest,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
         if (id != patchRequest.Id)
         {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
+            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.KeyDoesNotMatchEntityKey, id));
             return ValidationProblem(
-                detail: string.Format(Messages.Validation.SpecifiedKeyDoesNotMatchEntityKey, id, patchRequest.Id),
+                detail: string.Format(Messages.Validation.KeyDoesNotMatchEntityKey, id, patchRequest.Id),
                 modelStateDictionary: ModelState
             );
         }
@@ -225,16 +215,13 @@ public sealed class ProductsController(
     [HttpDelete(template: "{id:int}", Name = nameof(DeleteProductById))]
     public async Task<ActionResult<DeleteProductResponse>> DeleteProductById(
         IOptionsSnapshot<ApiBehaviorSettings> options,
-        [FromRoute] int id,
+        [FromRoute]
+        [Range(minimum: 1, maximum: int.MaxValue)]
+        int id,
+
         CancellationToken cancellationToken = default
     )
     {
-        if (id <= 0)
-        {
-            ModelState.TryAddModelError(nameof(id), string.Format(Messages.Validation.InvalidValue, id));
-            return ValidationProblem(ModelState);
-        }
-
         var removedProduct = await _unit.ProductRepository.RemoveByIdAsync(
             key: id,
             strategy: options.Value.RemoveStrategy,

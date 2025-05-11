@@ -43,22 +43,23 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var query = options.TrackChanges ? _dbSet : _dbSet.AsNoTracking();
+        var query = options.TrackChanges is false
+            ? _dbSet.AsNoTracking()
+            : _dbSet;
 
         if (options.IncludeHiddenEntities is false)
         {
             query = query.Where(entity => !entity.Hidden);
         }
         
-        query = query.OrderBy(entity => entity.Id);
-
-        if (options is PaginatedQueryOptions paginationOptions and { Limit: > 0 })
+        if (options.Pagination is not null)
         {
-            query = query.Skip(paginationOptions.Offset).Take(paginationOptions.Limit)
-                as IOrderedQueryable<TEntity>;
+            return query.OrderBy(entity => entity.Id)
+                .Skip((options.Pagination.PageNumber - 1) * options.Pagination.PageSize)
+                .Take(options.Pagination.PageSize);
         }
 
-        return query!;
+        return query.OrderBy(entity => entity.Id);
     }
 
     public async Task<IEnumerable<TEntity>> QueryMultipleAsync(
@@ -66,7 +67,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
 
         return await Query(options: options)
             .ToArrayAsync(cancellationToken);
@@ -80,7 +81,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
+        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
 
         return await Query(options: options)
             .Where(predicate)
@@ -184,9 +185,9 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var options = new PaginatedQueryOptions(
-            TrackChanges: true,
-            Limit: -1
+        var options = new QueryOptions(
+            Pagination: null,
+            TrackChanges: true
         );
 
         var entities = await Query(options: options)

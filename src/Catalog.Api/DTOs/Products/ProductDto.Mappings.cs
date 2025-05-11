@@ -4,6 +4,22 @@ using Catalog.Core.Models.Entities;
 
 namespace Catalog.Api.DTOs.Products;
 
+public abstract partial record ProductDto
+{
+    protected ProductDto(
+        Product product
+    ) : this (
+        Id: product.Id,
+        Name: product.Name,
+        Description: product.Description,
+        Price: product.Price,
+        Stock: product.Stock,
+        ImageUri: product.ImageUri,
+        CreatedAt: product.CreatedAt,
+        UpdatedAt: product.UpdatedAt
+    ) {}
+}
+
 #region POST
 public sealed partial record CreateProductRequest : IMappableToEntity<Product>
 {

@@ -11,14 +11,9 @@ internal static class Messages
     internal static class Validation
     {
         /// <summary>
-        /// The provided value was invalid.
-        /// </summary>
-        internal const string InvalidValue = "The value '{0}' is not valid.";
-        
-        /// <summary>
         /// The specified resouce key does not match the entity key.
         /// </summary>
-        internal const string SpecifiedKeyDoesNotMatchEntityKey = "The specified key '{0}' does not match the entity key '{1}'.";
+        internal const string KeyDoesNotMatchEntityKey = "The specified key '{0}' does not match the entity key '{1}'.";
     }
 
     /// <summary>

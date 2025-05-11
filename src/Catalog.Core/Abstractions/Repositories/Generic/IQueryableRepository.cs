@@ -40,7 +40,7 @@ public interface IQueryableRepository<TEntity>
     /// </summary>
     /// <param name="configureOptions">
     /// A delegate for configuring the options to use for this query.<br/>
-    /// When not specified, uses <see cref="PaginatedQueryOptions.Default"/>.
+    /// When not specified, uses <see cref="QueryOptions.Default"/>.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> to observe while waiting for the
@@ -63,7 +63,7 @@ public interface IQueryableRepository<TEntity>
     /// </param>
     /// <param name="configureOptions">
     /// A delegate for configuring the options to use for this query.<br/>
-    /// When not specified, uses <see cref="PaginatedQueryOptions.Default"/>.
+    /// When not specified, uses <see cref="QueryOptions.Default"/>.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> to observe while waiting for the

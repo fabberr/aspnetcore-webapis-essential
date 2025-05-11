@@ -1,4 +1,5 @@
 using Catalog.Core.Models.Entities;
+using Catalog.Core.Models.Parameters;
 
 namespace Catalog.Core.Repositories;
 
@@ -8,6 +9,13 @@ namespace Catalog.Core.Repositories;
 /// <remarks>
 /// This type serves as a base for all other query option types.
 /// </remarks>
+/// <param name="Pagination">
+/// Pagination options.<br/>
+/// <br/>
+/// <b>Warning:</b> When not specified, no pagination logic will be applied to
+/// the query and <i>all entries will be fetched from the data source</i>. Use
+/// with caution.
+/// </param>
 /// <param name="IncludeHiddenEntities">
 /// Whether hidden entities (<see cref="EntityBase.Hidden"/> is set to
 /// <see langword="true"/>) entities should be included in the query or not.
@@ -15,7 +23,8 @@ namespace Catalog.Core.Repositories;
 /// <param name="TrackChanges">
 /// Whether to track changes made to the entities returned from the query or not.
 /// </param>
-public record QueryOptions(
+public sealed record QueryOptions(
+    PaginationParameters? Pagination,
     bool IncludeHiddenEntities = false,
     bool TrackChanges = false
 )
@@ -27,16 +36,21 @@ public record QueryOptions(
     /// The options will be set as follows:
     /// <list type="bullet">
     ///     <item>
+    ///         <term><c><see cref="Pagination"/></c></term>
+    ///         <description><see cref="PaginationParameters.Default"/></description>
+    ///     </item>
+    ///     <item>
     ///         <term><c><see cref="IncludeHiddenEntities"/></c></term>
-    ///         <description><c><see langword="false"/></c></description>
+    ///         <description><see langword="false"/></description>
     ///     </item>
     ///     <item>
     ///         <term><c><see cref="TrackChanges"/></c></term>
-    ///         <description><c><see langword="false"/></c></description>
+    ///         <description><see langword="false"/></description>
     ///     </item>
     /// </list>
     /// </remarks>
     public static QueryOptions Default => new(
+        Pagination: PaginationParameters.Default,
         IncludeHiddenEntities: false,
         TrackChanges: false
     );

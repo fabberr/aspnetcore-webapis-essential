@@ -1,10 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Catalog.Core.Models.Entities;
 
 namespace Catalog.Api.DTOs.Products;
 
-public abstract record ProductDto(
+public abstract partial record ProductDto(
     int Id = default,
     string Name = "",
     string Description = "",
@@ -13,20 +12,7 @@ public abstract record ProductDto(
     string ImageUri = "",
     DateTime CreatedAt = default,
     DateTime? UpdatedAt = default
-)
-{
-    protected ProductDto(Product product) : this (
-        Id: product.Id,
-        Name: product.Name,
-        Description: product.Description,
-        Price: product.Price,
-        Stock: product.Stock,
-        ImageUri: product.ImageUri,
-        CreatedAt: product.CreatedAt,
-        UpdatedAt: product.UpdatedAt
-    )
-    {}
-}
+);
 
 #region POST
 public sealed partial record CreateProductRequest(
