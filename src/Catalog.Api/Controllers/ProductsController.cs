@@ -58,7 +58,7 @@ public sealed class ProductsController(
     )
     {
         var products = await _unit.ProductRepository.QueryMultipleAsync(
-            configureOptions: () => new QueryOptions(parameters),
+            configureOptions: () => new PaginatedQueryOptions(parameters),
             cancellationToken: cancellationToken
         );
         
@@ -86,7 +86,7 @@ public sealed class ProductsController(
     {
         var products = await _unit.ProductRepository.QueryMultipleByCategoryIdAsync(
             categoryKey: categoryId,
-            configureOptions: () => new QueryOptions(parameters),
+            configureOptions: () => new PaginatedQueryOptions(parameters),
             cancellationToken: cancellationToken
         );
 

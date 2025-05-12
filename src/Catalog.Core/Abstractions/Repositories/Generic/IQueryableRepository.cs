@@ -36,11 +36,28 @@ public interface IQueryableRepository<TEntity>
     IQueryable<TEntity> Query(QueryOptions options);
 
     /// <summary>
+    /// Exposes a <see cref="IQueryable{T}"/> object for querying paginated
+    /// entities of type <typeparamref name="TEntity"/> with the configured
+    /// options.
+    /// </summary>
+    /// <remarks>
+    /// The query enforces a strict ordering by <see cref="EntityBase.Id"/>, in
+    /// ascending order.
+    /// </remarks>
+    /// <param name="options">
+    /// Options to use for this query.
+    /// </param>
+    /// <returns>
+    /// An object for querying entities of type <typeparamref name="TEntity"/>.
+    /// </returns>
+    IQueryable<TEntity> PaginatedQuery(PaginatedQueryOptions options);
+
+    /// <summary>
     /// Queries for entities of type <typeparamref name="TEntity"/>.
     /// </summary>
     /// <param name="configureOptions">
     /// A delegate for configuring the options to use for this query.<br/>
-    /// When not specified, uses <see cref="QueryOptions.Default"/>.
+    /// When not specified, uses <see cref="PaginatedQueryOptions.Default"/>.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> to observe while waiting for the
@@ -63,7 +80,7 @@ public interface IQueryableRepository<TEntity>
     /// </param>
     /// <param name="configureOptions">
     /// A delegate for configuring the options to use for this query.<br/>
-    /// When not specified, uses <see cref="QueryOptions.Default"/>.
+    /// When not specified, uses <see cref="PaginatedQueryOptions.Default"/>.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> to observe while waiting for the

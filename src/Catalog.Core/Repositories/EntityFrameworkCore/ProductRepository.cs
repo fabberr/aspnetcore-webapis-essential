@@ -45,16 +45,17 @@ public sealed class ProductRepository(
                 !joined.Product.Hidden &&
                 !joined.Category.Hidden
             ))
+            .OrderBy(joined => joined.Product.Id)
             .Select(joined => joined.Product);
 
-        if (options.Pagination is not null)
+        if (options is PaginatedQueryOptions paginationOptions)
         {
-            return query.OrderBy(entity => entity.Id)
-                .Skip((options.Pagination.PageNumber - 1) * options.Pagination.PageSize)
-                .Take(options.Pagination.PageSize);
+            (int pageNumber, int pageSize) = paginationOptions.Pagination;
+            int skipCount = (pageNumber - 1) * pageSize;
+
+            query = query.Skip(skipCount).Take(pageSize);
         }
 
-        return await query.OrderBy(product => product.Id)
-            .ToArrayAsync(cancellationToken: cancellationToken);
+        return await query.ToArrayAsync(cancellationToken: cancellationToken);
     }
 }

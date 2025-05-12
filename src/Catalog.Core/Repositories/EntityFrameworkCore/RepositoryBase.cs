@@ -38,8 +38,27 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     protected readonly DbSet<TEntity> _dbSet = dbContext.Set<TEntity>();
     #endregion
 
-    #region IRepository<TEntity>
-    public IQueryable<TEntity> Query(QueryOptions options)
+    #region Protected Methods
+    /// <summary>
+    /// Implements <see cref="IQueryableRepository{TEntity}.Query(QueryOptions)"/>.
+    /// </summary>
+    /// <remarks>
+    /// When required internally by other implementations, it's advised to call
+    /// this method directly instead of calling the interface method.
+    /// </remarks>
+    /// <param name="options">
+    /// Options to use for this query.
+    /// </param>
+    /// <param name="additionalPredicates">
+    /// A collection of predicated to be added as filters for the query.
+    /// </param>
+    /// <returns>
+    /// An object for querying entities of type <typeparamref name="TEntity"/>.
+    /// </returns>
+    protected IQueryable<TEntity> QueryImpl(
+        QueryOptions options,
+        IEnumerable<Expression<Func<TEntity, bool>>>? additionalPredicates = null
+    )
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -51,26 +70,75 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         {
             query = query.Where(entity => !entity.Hidden);
         }
-        
-        if (options.Pagination is not null)
+
+        if (additionalPredicates is not null)
         {
-            return query.OrderBy(entity => entity.Id)
-                .Skip((options.Pagination.PageNumber - 1) * options.Pagination.PageSize)
-                .Take(options.Pagination.PageSize);
+            foreach (var predicate in additionalPredicates)
+            {
+                query = query.Where(predicate);
+            }
         }
 
         return query.OrderBy(entity => entity.Id);
     }
+
+    /// <summary>
+    /// Implements <see cref="IQueryableRepository{TEntity}.PaginatedQuery(PaginatedQueryOptions)"/>.
+    /// </summary>
+    /// <remarks>
+    /// When required internally by other implementations, it's advised to call
+    /// this method directly instead of calling the interface method.
+    /// </remarks>
+    /// <param name="options">
+    /// Options to use for this query.
+    /// </param>
+    /// <param name="additionalPredicates">
+    /// A collection of predicated to be added as filters for the query.
+    /// </param>
+    /// <returns>
+    /// An object for querying entities of type <typeparamref name="TEntity"/>.
+    /// </returns>
+    protected IQueryable<TEntity> PaginatedQueryImpl(
+        PaginatedQueryOptions options,
+        IEnumerable<Expression<Func<TEntity, bool>>>? additionalPredicates = null
+    )
+    {
+        ArgumentNullException.ThrowIfNull(options?.Pagination);
+
+        var query = QueryImpl(
+            options: options,
+            additionalPredicates: additionalPredicates
+        );
+
+        (int pageNumber, int pageSize) = options.Pagination;
+        int skipCount = (pageNumber - 1) * pageSize;
+
+        return query.Skip(skipCount).Take(pageSize);
+    }
+    #endregion
+
+    #region IRepository<TEntity>
+    public IQueryable<TEntity> Query(QueryOptions options) => QueryImpl(
+        options: options
+    );
+
+    public IQueryable<TEntity> PaginatedQuery(PaginatedQueryOptions options) => PaginatedQueryImpl(
+        options: options
+    );
 
     public async Task<IEnumerable<TEntity>> QueryMultipleAsync(
         Func<QueryOptions>? configureOptions = null,
         CancellationToken cancellationToken = default
     )
     {
-        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
+        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
 
-        return await Query(options: options)
-            .ToArrayAsync(cancellationToken);
+        var query = options switch {
+            PaginatedQueryOptions paginationOptions => PaginatedQueryImpl(options: paginationOptions),
+            _ => QueryImpl(options: options),
+        };
+
+        return await query.ToArrayAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<IEnumerable<TEntity>> QueryMultipleByPredicateAsync(
@@ -81,11 +149,17 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var options = configureOptions?.Invoke() ?? QueryOptions.Default;
+        var options = configureOptions?.Invoke() ?? PaginatedQueryOptions.Default;
 
-        return await Query(options: options)
-            .Where(predicate)
-            .ToArrayAsync(cancellationToken);
+        var query = options switch {
+            PaginatedQueryOptions paginationOptions => PaginatedQueryImpl(
+                options: paginationOptions,
+                additionalPredicates: [predicate]
+            ),
+            _ => QueryImpl(options: options),
+        };
+
+        return await query.ToArrayAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<TEntity?> FindByIdAsync(
@@ -94,7 +168,10 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var entity = await _dbSet.FindAsync([key], cancellationToken);
+        var entity = await _dbSet.FindAsync(
+            keyValues: [key],
+            cancellationToken: cancellationToken
+        );
 
         var options = configureOptions?.Invoke() ?? QueryOptions.Default;
 
@@ -112,7 +189,7 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         var options = configureOptions?.Invoke() ?? QueryOptions.Default;
 
-        return Query(options: options)
+        return QueryImpl(options: options)
             .FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
@@ -123,7 +200,10 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        var createdEntityEntry = await _dbSet.AddAsync(entity, cancellationToken);
+        var createdEntityEntry = await _dbSet.AddAsync(
+            entity: entity,
+            cancellationToken: cancellationToken
+        );
 
         return createdEntityEntry.Entity;
     }
@@ -185,14 +265,10 @@ public abstract class RepositoryBase<TEntity>(DbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var options = new QueryOptions(
-            Pagination: null,
-            TrackChanges: true
-        );
-
-        var entities = await Query(options: options)
-            .Where(predicate)
-            .ToArrayAsync(cancellationToken);
+        var entities = await QueryImpl(
+            options: new QueryOptions(TrackChanges: true),
+            additionalPredicates: [predicate]
+        ).ToArrayAsync(cancellationToken: cancellationToken);
 
         switch (strategy)
         {

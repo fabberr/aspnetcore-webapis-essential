@@ -58,7 +58,7 @@ public sealed class CategoriesController(
     )
     {
         var categories = await _unit.CategoryRepository.QueryMultipleAsync(
-            configureOptions: () => new QueryOptions(parameters),
+            configureOptions: () => new PaginatedQueryOptions(parameters),
             cancellationToken: cancellationToken
         );
 
