@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using Catalog.Core.Exceptions;
 using Catalog.Core.Extensions;
 
 namespace Catalog.Core.Models.Parameters;
