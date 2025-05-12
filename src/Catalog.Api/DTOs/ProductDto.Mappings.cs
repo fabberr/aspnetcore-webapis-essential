@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Catalog.Core.Abstractions.Mapping;
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Api.DTOs.Products;
+namespace Catalog.Api.DTOs;
 
 public abstract partial record ProductDto
 {

@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Api.DTOs.Categories;
+namespace Catalog.Api.DTOs;
 
 public abstract record CategoryDto(
     int Id = default,

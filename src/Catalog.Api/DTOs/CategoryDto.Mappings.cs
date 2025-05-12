@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Catalog.Core.Abstractions.Mapping;
 using Catalog.Core.Models.Entities;
 
-namespace Catalog.Api.DTOs.Categories;
+namespace Catalog.Api.DTOs;
 
 #region POST
 public sealed partial record CreateCategoryRequest : IMappableToEntity<Category>

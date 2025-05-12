@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Catalog.Api.DTOs;
-using Catalog.Api.DTOs.Categories;
+using Catalog.Api.DTOs.Pagination;
 using Catalog.Core.Abstractions.Repositories;
 using Catalog.Core.Models.Settings;
 using Catalog.Core.Repositories;

@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Catalog.Api.DTOs.Products;
+namespace Catalog.Api.DTOs;
 
 public abstract partial record ProductDto(
     int Id = default,

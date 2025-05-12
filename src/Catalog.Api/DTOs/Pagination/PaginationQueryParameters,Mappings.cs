@@ -1,6 +1,6 @@
 using Catalog.Core.Models.Parameters;
 
-namespace Catalog.Api.DTOs;
+namespace Catalog.Api.DTOs.Pagination;
 
 public partial record PaginationQueryParameters
 {
