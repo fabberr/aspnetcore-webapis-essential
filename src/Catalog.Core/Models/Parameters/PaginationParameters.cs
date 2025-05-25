@@ -22,14 +22,11 @@ public partial record PaginationParameters
      * for `record` types, however this is only the case when we provide a
      * primary constructor, which are always public.
      *
-     * This type implements a factory pattern to ensure its class invariant is
-     * not violated after instantiation so we can't actually provide any public
+     * Since this type implements a factory pattern to ensure its class
+     * invariants are never violated, we can't actually provide any public
      * constructors and thus, the `Deconstruct` method has to be implemened
      * manually if we want this functionality.
     */
     public void Deconstruct(out int pageNumber, out int pageSize)
-    {
-        pageNumber = PageNumber;
-        pageSize = PageSize;
-    }
+        => (pageNumber, pageSize) = (PageNumber, PageSize);
 }
